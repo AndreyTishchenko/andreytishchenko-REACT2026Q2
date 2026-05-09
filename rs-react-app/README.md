@@ -1,73 +1,87 @@
-# React + TypeScript + Vite
+# Wizarding Character Search
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React application for searching Harry Potter character records from
+[PotterDB](https://potterdb.com/). The app is built with Vite, React, and
+TypeScript, and uses class components throughout the UI.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Search PotterDB characters by name.
+- Display up to 12 sorted character cards per request.
+- Show house, species, gender, birth date, jobs, and aliases when PotterDB
+  provides them.
+- Persist the last search term in `localStorage`.
+- Show loading, empty, API error, and application fallback states.
+- Include a `Simulate app error` button for checking the React error boundary.
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript 6
+- Vite 8
+- ESLint 9
+- Prettier 3
+- PotterDB REST API
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Install dependencies from the app directory:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Start the development server:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+Build the production bundle:
+
+```bash
+npm run build
+```
+
+Preview the production build locally:
+
+```bash
+npm run preview
+```
+
+## Scripts
+
+- `npm run dev` starts the Vite development server.
+- `npm run build` runs TypeScript project checks and creates a production build.
+- `npm run lint` checks the project with ESLint.
+- `npm run format:fix` formats files with Prettier.
+- `npm run preview` serves the built app locally.
+- `npm run prepare` installs Husky hooks from the repository root.
+
+## Project Structure
+
+```text
+rs-react-app/
+  public/              Static icons and favicon
+  src/
+    api/               PotterDB request and response mapping
+    components/        Class-based React components
+    constants/         Shared constants
+    types/             TypeScript data models
+    utils/             Local storage helpers
+    App.tsx            Error boundary wrapper
+    main.tsx           React entry point
+    styles.css         App styles
+```
+
+## API Notes
+
+The app requests characters from:
+
+```text
+https://api.potterdb.com/v1/characters
+```
+
+Requests are sorted by character name, use the first page, and limit the result
+set to 12 items. When a search term is submitted, it is sent with PotterDB's
+`filter[name_cont]` parameter.
