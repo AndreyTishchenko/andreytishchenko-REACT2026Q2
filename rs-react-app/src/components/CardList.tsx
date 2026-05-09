@@ -2,11 +2,11 @@ import type { CharacterCardModel } from '../types/potter';
 import { Card } from './Card';
 
 interface CardListProps {
-  readonly characters: readonly CharacterCardModel[];
+  readonly characters?: readonly (Partial<CharacterCardModel> | null | undefined)[];
 }
 
 export function CardList({ characters }: CardListProps) {
-  if (characters.length === 0) {
+  if (!characters || characters.length === 0) {
     return (
       <div className="empty-state">
         No characters found. The Room of Requirement apparently required fewer results.
@@ -16,8 +16,8 @@ export function CardList({ characters }: CardListProps) {
 
   return (
     <div className="card-list">
-      {characters.map((character) => (
-        <Card key={character.id} character={character} />
+      {characters.map((character, index) => (
+        <Card key={character?.id ?? index} character={character} />
       ))}
     </div>
   );

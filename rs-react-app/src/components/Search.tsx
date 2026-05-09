@@ -1,13 +1,14 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { SearchStorage } from '../utils/storage';
 
 interface SearchProps {
-  readonly initialValue: string;
+  readonly initialValue?: string;
   readonly isLoading: boolean;
   readonly onSearch: (searchTerm: string) => void;
 }
 
 export function Search({ initialValue, isLoading, onSearch }: SearchProps) {
-  const [value, setValue] = useState(initialValue);
+  const [value, setValue] = useState(() => initialValue ?? SearchStorage.read());
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setValue(event.target.value);
@@ -15,7 +16,9 @@ export function Search({ initialValue, isLoading, onSearch }: SearchProps) {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    onSearch(value.trim());
+    const searchTerm = value.trim();
+    SearchStorage.write(searchTerm);
+    onSearch(searchTerm);
   };
 
   return (

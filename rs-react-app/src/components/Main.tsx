@@ -50,7 +50,6 @@ export function Main() {
         return;
       }
 
-      SearchStorage.write(nextSearchTerm);
       setIsLoading(true);
       setErrorMessage('');
       setSearchTerm(nextSearchTerm);
