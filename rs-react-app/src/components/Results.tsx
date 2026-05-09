@@ -1,4 +1,3 @@
-import { Component } from 'react';
 import type { CharacterCardModel } from '../types/potter';
 import { CardList } from './CardList';
 import { ErrorMessage } from './ErrorMessage';
@@ -11,31 +10,33 @@ interface ResultsProps {
   readonly isLoading: boolean;
 }
 
-export class Results extends Component<ResultsProps> {
-  renderContent() {
-    if (this.props.isLoading) {
-      return <Loader />;
-    }
-
-    if (this.props.errorMessage) {
-      return <ErrorMessage message={this.props.errorMessage} />;
-    }
-
-    return <CardList characters={this.props.characters} />;
+const renderContent = ({
+  characters,
+  errorMessage,
+  isLoading,
+}: ResultsProps) => {
+  if (isLoading) {
+    return <Loader />;
   }
 
-  render() {
-    return (
-      <section className="panel results-panel" aria-labelledby="results-title">
-        <div className="results-heading">
-          <div>
-            <p className="section-label">Results</p>
-            <h2 id="results-title">Archive entries</h2>
-          </div>
-          <ErrorTrigger />
+  if (errorMessage) {
+    return <ErrorMessage message={errorMessage} />;
+  }
+
+  return <CardList characters={characters} />;
+};
+
+export function Results(props: ResultsProps) {
+  return (
+    <section className="panel results-panel" aria-labelledby="results-title">
+      <div className="results-heading">
+        <div>
+          <p className="section-label">Results</p>
+          <h2 id="results-title">Archive entries</h2>
         </div>
-        {this.renderContent()}
-      </section>
-    );
-  }
+        <ErrorTrigger />
+      </div>
+      {renderContent(props)}
+    </section>
+  );
 }

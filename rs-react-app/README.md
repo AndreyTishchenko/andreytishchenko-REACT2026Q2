@@ -2,7 +2,7 @@
 
 React application for searching Harry Potter character records from
 [PotterDB](https://potterdb.com/). The app is built with Vite, React, and
-TypeScript, and uses class components throughout the UI.
+TypeScript, and uses function components throughout the UI.
 
 ## Features
 
@@ -65,7 +65,7 @@ rs-react-app/
   public/              Static icons and favicon
   src/
     api/               PotterDB request and response mapping
-    components/        Class-based React components
+    components/        React function components
     constants/         Shared constants
     types/             TypeScript data models
     utils/             Local storage helpers

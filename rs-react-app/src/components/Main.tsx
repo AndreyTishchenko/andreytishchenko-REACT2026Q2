@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { PotterApi } from '../api/potterApi';
 import { SearchStorage } from '../utils/storage';
 import type { CharacterCardModel } from '../types/potter';
@@ -6,72 +6,72 @@ import { Header } from './Header';
 import { Results } from './Results';
 import { Search } from './Search';
 
-interface MainState {
-  readonly characters: readonly CharacterCardModel[];
-  readonly errorMessage: string;
-  readonly isLoading: boolean;
-  readonly searchTerm: string;
-}
+export function Main() {
+  const [characters, setCharacters] = useState<readonly CharacterCardModel[]>([]);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(() => SearchStorage.read());
 
-export class Main extends Component<object, MainState> {
-  state: MainState = {
-    characters: [],
-    errorMessage: '',
-    isLoading: false,
-    searchTerm: SearchStorage.read(),
-  };
-
-  componentDidMount(): void {
-    this.loadCharacters(this.state.searchTerm);
-  }
-
-  private loadCharacters = (searchTerm: string): void => {
-    this.setState({ isLoading: true, errorMessage: '' });
+  useEffect(() => {
+    let isActive = true;
 
     PotterApi.fetchCharacters(searchTerm)
-      .then((characters) => {
-        this.setState({ characters, isLoading: false });
+      .then((loadedCharacters) => {
+        if (!isActive) {
+          return;
+        }
+
+        setCharacters(loadedCharacters);
+        setIsLoading(false);
       })
       .catch((error: unknown) => {
+        if (!isActive) {
+          return;
+        }
+
         const message =
           error instanceof Error
             ? error.message
             : 'The request failed for an unknown reason.';
 
-        this.setState({
-          characters: [],
-          errorMessage: message,
-          isLoading: false,
-        });
+        setCharacters([]);
+        setErrorMessage(message);
+        setIsLoading(false);
       });
-  };
 
-  private handleSearch = (searchTerm: string): void => {
-    if (searchTerm === this.state.searchTerm) {
-      return;
-    }
+    return () => {
+      isActive = false;
+    };
+  }, [searchTerm]);
 
-    SearchStorage.write(searchTerm);
-    this.setState({ searchTerm }, () => {
-      this.loadCharacters(searchTerm);
-    });
-  };
+  const handleSearch = useCallback(
+    (nextSearchTerm: string): void => {
+      if (nextSearchTerm === searchTerm) {
+        return;
+      }
 
-  render() {
-    return (
-      <main className="app-shell">
-        <Header />
-        <Search
-          initialValue={this.state.searchTerm}
-          isLoading={this.state.isLoading}
-          onSearch={this.handleSearch}
-        />
-        <Results
-          characters={this.state.characters}
-          errorMessage={this.state.errorMessage}
-          isLoading={this.state.isLoading}
-        />
-      </main>
-    );
-  }
+      SearchStorage.write(nextSearchTerm);
+      setIsLoading(true);
+      setErrorMessage('');
+      setSearchTerm(nextSearchTerm);
+    },
+    [searchTerm]
+  );
+
+  return (
+    <main className="app-shell">
+      <Header />
+      <Search
+        key={searchTerm}
+        initialValue={searchTerm}
+        isLoading={isLoading}
+        onSearch={handleSearch}
+      />
+      <Results
+        characters={characters}
+        errorMessage={errorMessage}
+        isLoading={isLoading}
+      />
+    </main>
+  );
 }

@@ -1,27 +1,15 @@
-import { Component } from 'react';
+import { useErrorBoundaryReporter } from './errorBoundaryContext';
 
-interface ErrorTriggerState {
-  readonly shouldThrow: boolean;
-}
+export function ErrorTrigger() {
+  const reportError = useErrorBoundaryReporter();
 
-export class ErrorTrigger extends Component<object, ErrorTriggerState> {
-  state: ErrorTriggerState = {
-    shouldThrow: false,
+  const simulateError = (): void => {
+    reportError(new Error('Simulated application error from the test button.'));
   };
 
-  private simulateError = (): void => {
-    this.setState({ shouldThrow: true });
-  };
-
-  render() {
-    if (this.state.shouldThrow) {
-      throw new Error('Simulated application error from the test button.');
-    }
-
-    return (
-      <button className="danger-button" type="button" onClick={this.simulateError}>
-        Simulate app error
-      </button>
-    );
-  }
+  return (
+    <button className="danger-button" type="button" onClick={simulateError}>
+      Simulate app error
+    </button>
+  );
 }
