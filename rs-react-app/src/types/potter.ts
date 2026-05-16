@@ -29,8 +29,27 @@ export interface PotterCharactersResponse {
   readonly links?: PotterApiLinks;
 }
 
+export interface PotterCharacterResponse {
+  readonly data: PotterCharacterResource;
+}
+
 export interface CharacterCardModel {
   readonly id: string;
   readonly name: string;
   readonly description: string;
+}
+
+export interface CharacterDetailsModel extends CharacterCardModel {
+  readonly aliases: string;
+  readonly born: string;
+  readonly died: string;
+  readonly gender: string;
+  readonly house: string;
+  readonly jobs: string;
+  readonly species: string;
+}
+
+export interface CharacterSearchResult {
+  readonly characters: readonly CharacterCardModel[];
+  readonly hasNextPage: boolean;
 }

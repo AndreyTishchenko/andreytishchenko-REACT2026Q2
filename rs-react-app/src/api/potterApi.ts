@@ -1,7 +1,10 @@
 import { FIRST_PAGE, PAGE_SIZE } from '../constants/storage';
 import type {
   CharacterCardModel,
+  CharacterDetailsModel,
+  CharacterSearchResult,
   PotterCharacterAttributes,
+  PotterCharacterResponse,
   PotterCharacterResource,
   PotterCharactersResponse,
 } from '../types/potter';
@@ -59,6 +62,15 @@ const isCharactersResponse = (value: unknown): value is PotterCharactersResponse
   return Array.isArray(record.data) && record.data.every(isCharacterResource);
 };
 
+const isCharacterResponse = (value: unknown): value is PotterCharacterResponse => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  return isCharacterResource(record.data);
+};
+
 const delay = (): Promise<void> =>
   new Promise((resolve) => {
     window.setTimeout(resolve, ARTIFICIAL_DELAY_MS);
@@ -95,10 +107,30 @@ const mapCharacter = (character: PotterCharacterResource): CharacterCardModel =>
   description: buildDescription(character.attributes),
 });
 
+const mapCharacterDetails = (
+  character: PotterCharacterResource
+): CharacterDetailsModel => {
+  const attributes = character.attributes;
+
+  return {
+    ...mapCharacter(character),
+    aliases: formatList(attributes.alias_names) || 'No aliases listed',
+    born: attributes.born ?? 'Unknown',
+    died: attributes.died ?? 'Unknown',
+    gender: attributes.gender ?? 'Unknown',
+    house: attributes.house ?? 'Unknown',
+    jobs: formatList(attributes.jobs) || 'No jobs listed',
+    species: attributes.species ?? 'Unknown',
+  };
+};
+
 export class PotterApi {
-  static async fetchCharacters(searchTerm: string): Promise<CharacterCardModel[]> {
+  static async fetchCharacters(
+    searchTerm: string,
+    page = FIRST_PAGE
+  ): Promise<CharacterSearchResult> {
     const url = new URL(API_BASE_URL);
-    url.searchParams.set('page[number]', String(FIRST_PAGE));
+    url.searchParams.set('page[number]', String(page));
     url.searchParams.set('page[size]', String(PAGE_SIZE));
     url.searchParams.set('sort', 'name');
 
@@ -122,6 +154,33 @@ export class PotterApi {
       throw new Error('PotterDB returned data in an unexpected format. Tragic, but readable.');
     }
 
-    return json.data.map(mapCharacter);
+    return {
+      characters: json.data.map(mapCharacter),
+      hasNextPage: Boolean(json.links?.next),
+    };
+  }
+
+  static async fetchCharacterDetails(
+    characterId: string
+  ): Promise<CharacterDetailsModel> {
+    const url = new URL(`${API_BASE_URL}/${characterId}`);
+
+    await delay();
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(
+        `The Ministry archives could not find that character (${response.status}).`
+      );
+    }
+
+    const json: unknown = await response.json();
+
+    if (!isCharacterResponse(json)) {
+      throw new Error('PotterDB returned character details in an unexpected format.');
+    }
+
+    return mapCharacterDetails(json.data);
   }
 }

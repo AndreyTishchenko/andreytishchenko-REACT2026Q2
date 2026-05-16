@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { SearchStorage } from '../utils/storage';
+import { SEARCH_STORAGE_KEY } from '../constants/storage';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface SearchProps {
   readonly initialValue?: string;
@@ -8,7 +9,8 @@ interface SearchProps {
 }
 
 export function Search({ initialValue, isLoading, onSearch }: SearchProps) {
-  const [value, setValue] = useState(() => initialValue ?? SearchStorage.read());
+  const [storedSearchTerm, writeSearchTerm] = useLocalStorage(SEARCH_STORAGE_KEY);
+  const [value, setValue] = useState(() => initialValue ?? storedSearchTerm);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setValue(event.target.value);
@@ -17,7 +19,7 @@ export function Search({ initialValue, isLoading, onSearch }: SearchProps) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     const searchTerm = value.trim();
-    SearchStorage.write(searchTerm);
+    writeSearchTerm(searchTerm);
     onSearch(searchTerm);
   };
 

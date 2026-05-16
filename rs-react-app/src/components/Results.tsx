@@ -8,12 +8,16 @@ interface ResultsProps {
   readonly characters: readonly CharacterCardModel[];
   readonly errorMessage: string;
   readonly isLoading: boolean;
+  readonly selectedCharacterId?: string;
+  readonly onSelectCharacter?: (characterId: string) => void;
 }
 
 const renderContent = ({
   characters,
   errorMessage,
   isLoading,
+  selectedCharacterId,
+  onSelectCharacter,
 }: ResultsProps) => {
   if (isLoading) {
     return <Loader />;
@@ -23,7 +27,13 @@ const renderContent = ({
     return <ErrorMessage message={errorMessage} />;
   }
 
-  return <CardList characters={characters} />;
+  return (
+    <CardList
+      characters={characters}
+      selectedCharacterId={selectedCharacterId}
+      onSelectCharacter={onSelectCharacter}
+    />
+  );
 };
 
 export function Results(props: ResultsProps) {

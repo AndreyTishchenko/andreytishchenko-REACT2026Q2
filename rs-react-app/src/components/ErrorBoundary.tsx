@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { ErrorBoundaryContext } from './errorBoundaryContext';
 
 interface ErrorBoundaryProps {
   readonly children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  readonly hasError: boolean;
 }
 
 const getRejectionError = (reason: unknown): Error => {
@@ -13,50 +17,66 @@ const getRejectionError = (reason: unknown): Error => {
   return new Error(String(reason));
 };
 
-export function ErrorBoundary({ children }: ErrorBoundaryProps) {
-  const [hasError, setHasError] = useState(false);
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  readonly state: ErrorBoundaryState = {
+    hasError: false,
+  };
 
-  const reportError = useCallback((error: Error): void => {
-    console.error('Application error boundary caught an error:', error);
-    setHasError(true);
-  }, []);
-
-  useEffect(() => {
-    const handleError = (event: ErrorEvent): void => {
-      reportError(event.error instanceof Error ? event.error : new Error(event.message));
-    };
-
-    const handleUnhandledRejection = (event: PromiseRejectionEvent): void => {
-      reportError(getRejectionError(event.reason));
-    };
-
-    window.addEventListener('error', handleError);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-
-    return () => {
-      window.removeEventListener('error', handleError);
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-    };
-  }, [reportError]);
-
-  if (hasError) {
-    return (
-      <main className="app-shell">
-        <section className="panel fallback-panel">
-          <p className="section-label">Application error</p>
-          <h1>Something broke inside the enchanted machinery.</h1>
-          <p>
-            A fallback UI is now protecting the page from turning into a blank white
-            void, the web platform&apos;s favorite jump scare.
-          </p>
-        </section>
-      </main>
-    );
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
   }
 
-  return (
-    <ErrorBoundaryContext.Provider value={reportError}>
-      {children}
-    </ErrorBoundaryContext.Provider>
-  );
+  componentDidMount(): void {
+    window.addEventListener('error', this.handleError);
+    window.addEventListener('unhandledrejection', this.handleUnhandledRejection);
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    console.error('Application error boundary caught an error:', error, errorInfo);
+  }
+
+  componentWillUnmount(): void {
+    window.removeEventListener('error', this.handleError);
+    window.removeEventListener('unhandledrejection', this.handleUnhandledRejection);
+  }
+
+  private readonly reportError = (error: Error): void => {
+    console.error('Application error boundary caught an error:', error);
+    this.setState({ hasError: true });
+  };
+
+  private readonly handleError = (event: ErrorEvent): void => {
+    this.reportError(
+      event.error instanceof Error ? event.error : new Error(event.message)
+    );
+  };
+
+  private readonly handleUnhandledRejection = (
+    event: PromiseRejectionEvent
+  ): void => {
+    this.reportError(getRejectionError(event.reason));
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <main className="app-shell">
+          <section className="panel fallback-panel">
+            <p className="section-label">Application error</p>
+            <h1>Something broke inside the enchanted machinery.</h1>
+            <p>
+              A fallback UI is now protecting the page from turning into a blank white
+              void, the web platform&apos;s favorite jump scare.
+            </p>
+          </section>
+        </main>
+      );
+    }
+
+    return (
+      <ErrorBoundaryContext.Provider value={this.reportError}>
+        {this.props.children}
+      </ErrorBoundaryContext.Provider>
+    );
+  }
 }

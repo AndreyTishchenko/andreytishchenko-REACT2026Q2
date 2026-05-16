@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it, vi } from 'vitest';
 import { Card } from './Card';
 
 describe('Card', () => {
@@ -31,5 +32,23 @@ describe('Card', () => {
     render(<Card character={{ id: 'missing-fields' }} />);
 
     expect(screen.getByRole('heading', { name: 'Unknown character' })).toBeInTheDocument();
+  });
+
+  it('notifies when a selectable card is opened', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    render(
+      <Card
+        character={{ id: 'luna', name: 'Luna Lovegood' }}
+        isSelected
+        onSelect={onSelect}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /view details/i }));
+
+    expect(screen.getByRole('article')).toHaveAttribute('aria-current', 'true');
+    expect(onSelect).toHaveBeenCalledWith('luna');
   });
 });
