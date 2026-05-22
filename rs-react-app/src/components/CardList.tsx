@@ -6,7 +6,7 @@ interface CardListProps {
   readonly selectedCharacterId?: string;
   readonly selectedCharacterIds?: readonly string[];
   readonly onSelectCharacter?: (characterId: string) => void;
-  readonly onToggleSelection?: (characterId: string) => void;
+  readonly onToggleSelection?: (character: CharacterCardModel) => void;
 }
 
 export function CardList({

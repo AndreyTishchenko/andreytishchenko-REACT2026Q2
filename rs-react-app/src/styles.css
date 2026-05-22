@@ -385,6 +385,43 @@ input:disabled {
   font-weight: 800;
 }
 
+.selected-flyout {
+  position: sticky;
+  bottom: 16px;
+  z-index: 10;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  width: min(720px, 100%);
+  margin: 28px auto 0;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 32%, transparent);
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--color-panel-top), var(--color-panel-bottom));
+  box-shadow: 0 16px 50px var(--shadow-panel);
+  padding: 14px 16px;
+}
+
+.selected-flyout p {
+  margin: 0;
+  color: var(--color-body);
+  font-weight: 800;
+}
+
+.selected-flyout-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.selected-flyout button {
+  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-accent-strong) 8%, transparent);
+  color: var(--color-accent-strong);
+  padding: 10px 12px;
+  font-weight: 800;
+}
+
 .loader,
 .empty-state,
 .error-message {
@@ -462,6 +499,12 @@ input:disabled {
   }
 
   .results-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .selected-flyout,
+  .selected-flyout-actions {
     align-items: stretch;
     flex-direction: column;
   }

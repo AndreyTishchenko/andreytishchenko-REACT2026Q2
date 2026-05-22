@@ -16,6 +16,7 @@ export interface CharactersState {
   readonly isLoading: boolean;
   readonly isSearchReady: boolean;
   readonly searchTerm: string;
+  readonly selectedCharacters: CharacterCardModel[];
   readonly selectedCharacterIds: string[];
 }
 
@@ -28,6 +29,7 @@ export const initialCharactersState: CharactersState = {
   isLoading: false,
   isSearchReady: false,
   searchTerm: '',
+  selectedCharacters: [],
   selectedCharacterIds: [],
 };
 
@@ -62,17 +64,26 @@ export const charactersSlice = createSlice({
       state.searchTerm = action.payload;
       state.errorMessage = '';
     },
-    toggleSelectedCharacter(state, action: PayloadAction<string>) {
-      const characterId = action.payload;
+    clearSelectedCharacters(state) {
+      state.selectedCharacters = [];
+      state.selectedCharacterIds = [];
+    },
+    toggleSelectedCharacter(state, action: PayloadAction<CharacterCardModel>) {
+      const character = action.payload;
+      const characterId = character.id;
 
       if (state.selectedCharacterIds.includes(characterId)) {
         state.selectedCharacterIds = state.selectedCharacterIds.filter(
           (selectedCharacterId) => selectedCharacterId !== characterId
         );
+        state.selectedCharacters = state.selectedCharacters.filter(
+          (selectedCharacter) => selectedCharacter.id !== characterId
+        );
         return;
       }
 
       state.selectedCharacterIds.push(characterId);
+      state.selectedCharacters.push(character);
     },
   },
   extraReducers: (builder) => {
@@ -109,6 +120,10 @@ export const charactersSlice = createSlice({
   },
 });
 
-export const { initializeSearchTerm, setSearchTerm, toggleSelectedCharacter } =
-  charactersSlice.actions;
+export const {
+  clearSelectedCharacters,
+  initializeSearchTerm,
+  setSearchTerm,
+  toggleSelectedCharacter,
+} = charactersSlice.actions;
 export const charactersReducer = charactersSlice.reducer;

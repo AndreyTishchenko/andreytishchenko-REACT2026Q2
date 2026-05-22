@@ -3,16 +3,19 @@ import { Outlet, useSearchParams } from 'react-router-dom';
 import { FIRST_PAGE } from '../constants/storage';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
+  clearSelectedCharacters,
   fetchCharacters,
   initializeSearchTerm,
   setSearchTerm,
   toggleSelectedCharacter,
 } from '../store/charactersSlice';
+import type { CharacterCardModel } from '../types/potter';
 import { readStoredSearchTerm } from '../utils/storage';
 import { Header } from './Header';
 import { Pagination } from './Pagination';
 import { Results } from './Results';
 import { Search } from './Search';
+import { SelectedItemsFlyout } from './SelectedItemsFlyout';
 
 const getUrlPage = (searchParams: URLSearchParams): number => {
   const parsedPage = Number(searchParams.get('page'));
@@ -31,6 +34,7 @@ export function Main() {
     isLoading,
     isSearchReady,
     searchTerm,
+    selectedCharacters,
     selectedCharacterIds,
   } = useAppSelector((state) => state.characters);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -89,11 +93,15 @@ export function Main() {
   );
 
   const handleToggleSelection = useCallback(
-    (characterId: string): void => {
-      dispatch(toggleSelectedCharacter(characterId));
+    (character: CharacterCardModel): void => {
+      dispatch(toggleSelectedCharacter(character));
     },
     [dispatch]
   );
+
+  const handleClearSelectedCharacters = useCallback((): void => {
+    dispatch(clearSelectedCharacters());
+  }, [dispatch]);
 
   return (
     <main className="app-shell">
@@ -126,6 +134,10 @@ export function Main() {
         </div>
         <Outlet key={selectedCharacterId ?? 'empty-details'} />
       </div>
+      <SelectedItemsFlyout
+        selectedCharacters={selectedCharacters}
+        onUnselectAll={handleClearSelectedCharacters}
+      />
     </main>
   );
 }

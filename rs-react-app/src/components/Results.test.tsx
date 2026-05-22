@@ -37,8 +37,8 @@ describe('Results and CardList', () => {
       <CardList
         characters={characters}
         selectedCharacterIds={[...selectedCharacterIds]}
-        onToggleSelection={(characterId) => {
-          selectedCharacterIds.delete(characterId);
+        onToggleSelection={(character) => {
+          selectedCharacterIds.delete(character.id);
         }}
       />
     );
@@ -49,8 +49,8 @@ describe('Results and CardList', () => {
       <CardList
         characters={characters}
         selectedCharacterIds={[...selectedCharacterIds]}
-        onToggleSelection={(characterId) => {
-          selectedCharacterIds.delete(characterId);
+        onToggleSelection={(character) => {
+          selectedCharacterIds.delete(character.id);
         }}
       />
     );

@@ -86,7 +86,11 @@ describe('Card', () => {
 
     await user.click(screen.getByRole('checkbox', { name: /select luna lovegood/i }));
 
-    expect(onToggleSelection).toHaveBeenCalledWith('luna');
+    expect(onToggleSelection).toHaveBeenCalledWith({
+      id: 'luna',
+      name: 'Luna Lovegood',
+      description: 'No detailed biography is available for this character.',
+    });
     expect(onSelect).not.toHaveBeenCalled();
   });
 });

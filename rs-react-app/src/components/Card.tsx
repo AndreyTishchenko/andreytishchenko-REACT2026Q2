@@ -6,7 +6,7 @@ interface CardProps {
   readonly isDetailsOpen?: boolean;
   readonly isSelected?: boolean;
   readonly onSelect?: (characterId: string) => void;
-  readonly onToggleSelection?: (characterId: string) => void;
+  readonly onToggleSelection?: (character: CharacterCardModel) => void;
 }
 
 export function Card({
@@ -30,7 +30,11 @@ export function Card({
 
   const handleToggleSelection = (): void => {
     if (characterId) {
-      onToggleSelection?.(characterId);
+      onToggleSelection?.({
+        id: characterId,
+        name,
+        description,
+      });
     }
   };
 
