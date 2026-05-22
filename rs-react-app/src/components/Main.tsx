@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
-import { PotterApi } from '../api/potterApi';
 import { FIRST_PAGE } from '../constants/storage';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import {
+  fetchCharacters,
+  initializeSearchTerm,
+  setSearchTerm,
+} from '../store/charactersSlice';
 import { readStoredSearchTerm } from '../utils/storage';
-import type { CharacterCardModel } from '../types/potter';
 import { Header } from './Header';
 import { Pagination } from './Pagination';
 import { Results } from './Results';
@@ -17,15 +21,23 @@ const getUrlPage = (searchParams: URLSearchParams): number => {
 };
 
 export function Main() {
-  const [characters, setCharacters] = useState<readonly CharacterCardModel[]>([]);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(() => readStoredSearchTerm());
+  const dispatch = useAppDispatch();
+  const {
+    characters,
+    errorMessage,
+    hasLoadedOnce,
+    hasNextPage,
+    isLoading,
+    isSearchReady,
+    searchTerm,
+  } = useAppSelector((state) => state.characters);
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = getUrlPage(searchParams);
   const selectedCharacterId = searchParams.get('details') ?? undefined;
+
+  useEffect(() => {
+    dispatch(initializeSearchTerm(readStoredSearchTerm()));
+  }, [dispatch]);
 
   useEffect(() => {
     if (searchParams.get('page') !== String(currentPage)) {
@@ -36,58 +48,26 @@ export function Main() {
   }, [currentPage, searchParams, setSearchParams]);
 
   useEffect(() => {
-    let isActive = true;
+    if (!isSearchReady) {
+      return;
+    }
 
-    PotterApi.fetchCharacters(searchTerm, currentPage)
-      .then((result) => {
-        if (!isActive) {
-          return;
-        }
-
-        setCharacters(result.characters);
-        setHasNextPage(result.hasNextPage);
-        setHasLoadedOnce(true);
-        setIsLoading(false);
-      })
-      .catch((error: unknown) => {
-        if (!isActive) {
-          return;
-        }
-
-        const message =
-          error instanceof Error
-            ? error.message
-            : 'The request failed for an unknown reason.';
-
-        setCharacters([]);
-        setHasNextPage(false);
-        setErrorMessage(message);
-        setHasLoadedOnce(true);
-        setIsLoading(false);
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, [currentPage, searchTerm]);
+    void dispatch(fetchCharacters({ page: currentPage, searchTerm }));
+  }, [currentPage, dispatch, isSearchReady, searchTerm]);
 
   const handleSearch = useCallback(
     (nextSearchTerm: string): void => {
-      setIsLoading(true);
-      setErrorMessage('');
-      setSearchTerm(nextSearchTerm);
+      dispatch(setSearchTerm(nextSearchTerm));
       const nextParams = new URLSearchParams(searchParams);
       nextParams.set('page', String(FIRST_PAGE));
       nextParams.delete('details');
       setSearchParams(nextParams);
     },
-    [searchParams, setSearchParams]
+    [dispatch, searchParams, setSearchParams]
   );
 
   const handlePageChange = useCallback(
     (nextPage: number): void => {
-      setIsLoading(true);
-      setErrorMessage('');
       const nextParams = new URLSearchParams(searchParams);
       nextParams.set('page', String(nextPage));
       nextParams.delete('details');

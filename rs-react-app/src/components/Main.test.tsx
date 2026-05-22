@@ -2,7 +2,10 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { Provider } from 'react-redux';
 import { SEARCH_STORAGE_KEY } from '../constants/storage';
+import { ThemeProvider } from '../context/ThemeProvider';
+import { createAppStore } from '../store/store';
 import { characters } from '../test/testData';
 import type { CharacterSearchResult } from '../types/potter';
 import { Main } from './Main';
@@ -19,11 +22,15 @@ vi.mock('../api/potterApi', () => ({
 
 const renderMain = (initialEntry = '/') =>
   render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route path="/" element={<Main />} />
-      </Routes>
-    </MemoryRouter>
+    <Provider store={createAppStore()}>
+      <ThemeProvider>
+        <MemoryRouter initialEntries={[initialEntry]}>
+          <Routes>
+            <Route path="/" element={<Main />} />
+          </Routes>
+        </MemoryRouter>
+      </ThemeProvider>
+    </Provider>
   );
 
 describe('Main', () => {
@@ -37,7 +44,9 @@ describe('Main', () => {
   it('makes initial API call on component mount', async () => {
     renderMain();
 
-    expect(mocks.fetchCharacters).toHaveBeenCalledWith('', 1);
+    await waitFor(() => {
+      expect(mocks.fetchCharacters).toHaveBeenCalledWith('', 1);
+    });
     expect(await screen.findByText('Harry Potter')).toBeInTheDocument();
   });
 
@@ -46,7 +55,9 @@ describe('Main', () => {
 
     renderMain();
 
-    expect(mocks.fetchCharacters).toHaveBeenCalledWith('Hermione', 1);
+    await waitFor(() => {
+      expect(mocks.fetchCharacters).toHaveBeenCalledWith('Hermione', 1);
+    });
     expect(screen.getByRole('searchbox')).toHaveValue('Hermione');
     expect(await screen.findByText('Hermione Granger')).toBeInTheDocument();
   });
@@ -61,7 +72,9 @@ describe('Main', () => {
 
     renderMain();
 
-    expect(screen.getByRole('status')).toHaveTextContent(/loading magical records/i);
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      /loading magical records/i
+    );
 
     resolveCharacters({
       characters,
