@@ -7,6 +7,7 @@ import {
   initialCharactersState,
   initializeSearchTerm,
   setSearchTerm,
+  toggleSelectedCharacter,
 } from './charactersSlice';
 import { createAppStore } from './store';
 
@@ -35,6 +36,20 @@ describe('charactersSlice', () => {
 
     expect(state.searchTerm).toBe('Luna');
     expect(state.errorMessage).toBe('');
+  });
+
+  it('stores and removes selected character ids', () => {
+    const selectedState = charactersReducer(
+      initialCharactersState,
+      toggleSelectedCharacter('harry')
+    );
+    const unselectedState = charactersReducer(
+      selectedState,
+      toggleSelectedCharacter('harry')
+    );
+
+    expect(selectedState.selectedCharacterIds).toEqual(['harry']);
+    expect(unselectedState.selectedCharacterIds).toEqual([]);
   });
 
   it('stores fulfilled character search results', async () => {

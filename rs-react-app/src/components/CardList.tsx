@@ -4,13 +4,17 @@ import { Card } from './Card';
 interface CardListProps {
   readonly characters?: readonly (Partial<CharacterCardModel> | null | undefined)[];
   readonly selectedCharacterId?: string;
+  readonly selectedCharacterIds?: readonly string[];
   readonly onSelectCharacter?: (characterId: string) => void;
+  readonly onToggleSelection?: (characterId: string) => void;
 }
 
 export function CardList({
   characters,
   selectedCharacterId,
+  selectedCharacterIds = [],
   onSelectCharacter,
+  onToggleSelection,
 }: CardListProps) {
   if (!characters || characters.length === 0) {
     return (
@@ -26,8 +30,10 @@ export function CardList({
         <Card
           key={character?.id ?? index}
           character={character}
-          isSelected={character?.id === selectedCharacterId}
+          isDetailsOpen={character?.id === selectedCharacterId}
+          isSelected={Boolean(character?.id && selectedCharacterIds.includes(character.id))}
           onSelect={onSelectCharacter}
+          onToggleSelection={onToggleSelection}
         />
       ))}
     </div>

@@ -6,6 +6,7 @@ import {
   fetchCharacters,
   initializeSearchTerm,
   setSearchTerm,
+  toggleSelectedCharacter,
 } from '../store/charactersSlice';
 import { readStoredSearchTerm } from '../utils/storage';
 import { Header } from './Header';
@@ -30,6 +31,7 @@ export function Main() {
     isLoading,
     isSearchReady,
     searchTerm,
+    selectedCharacterIds,
   } = useAppSelector((state) => state.characters);
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = getUrlPage(searchParams);
@@ -86,6 +88,13 @@ export function Main() {
     [currentPage, searchParams, setSearchParams]
   );
 
+  const handleToggleSelection = useCallback(
+    (characterId: string): void => {
+      dispatch(toggleSelectedCharacter(characterId));
+    },
+    [dispatch]
+  );
+
   return (
     <main className="app-shell">
       <Header />
@@ -102,7 +111,9 @@ export function Main() {
             errorMessage={errorMessage}
             isLoading={isLoading}
             selectedCharacterId={selectedCharacterId}
+            selectedCharacterIds={selectedCharacterIds}
             onSelectCharacter={handleSelectCharacter}
+            onToggleSelection={handleToggleSelection}
           />
           {hasLoadedOnce && !errorMessage ? (
             <Pagination

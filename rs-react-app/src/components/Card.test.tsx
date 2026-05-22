@@ -41,7 +41,7 @@ describe('Card', () => {
     render(
       <Card
         character={{ id: 'luna', name: 'Luna Lovegood' }}
-        isSelected
+        isDetailsOpen
         onSelect={onSelect}
       />
     );
@@ -50,5 +50,43 @@ describe('Card', () => {
 
     expect(screen.getByRole('article')).toHaveAttribute('aria-current', 'true');
     expect(onSelect).toHaveBeenCalledWith('luna');
+  });
+
+  it('opens details when clicking the card outside the checkbox', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onToggleSelection = vi.fn();
+
+    render(
+      <Card
+        character={{ id: 'luna', name: 'Luna Lovegood' }}
+        onSelect={onSelect}
+        onToggleSelection={onToggleSelection}
+      />
+    );
+
+    await user.click(screen.getByRole('article'));
+
+    expect(onSelect).toHaveBeenCalledWith('luna');
+    expect(onToggleSelection).not.toHaveBeenCalled();
+  });
+
+  it('toggles checkbox selection without opening details', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    const onToggleSelection = vi.fn();
+
+    render(
+      <Card
+        character={{ id: 'luna', name: 'Luna Lovegood' }}
+        onSelect={onSelect}
+        onToggleSelection={onToggleSelection}
+      />
+    );
+
+    await user.click(screen.getByRole('checkbox', { name: /select luna lovegood/i }));
+
+    expect(onToggleSelection).toHaveBeenCalledWith('luna');
+    expect(onSelect).not.toHaveBeenCalled();
   });
 });

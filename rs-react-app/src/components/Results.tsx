@@ -9,7 +9,9 @@ interface ResultsProps {
   readonly errorMessage: string;
   readonly isLoading: boolean;
   readonly selectedCharacterId?: string;
+  readonly selectedCharacterIds?: readonly string[];
   readonly onSelectCharacter?: (characterId: string) => void;
+  readonly onToggleSelection?: (characterId: string) => void;
 }
 
 const renderContent = ({
@@ -17,7 +19,9 @@ const renderContent = ({
   errorMessage,
   isLoading,
   selectedCharacterId,
+  selectedCharacterIds,
   onSelectCharacter,
+  onToggleSelection,
 }: ResultsProps) => {
   if (isLoading) {
     return <Loader />;
@@ -31,7 +35,9 @@ const renderContent = ({
     <CardList
       characters={characters}
       selectedCharacterId={selectedCharacterId}
+      selectedCharacterIds={selectedCharacterIds}
       onSelectCharacter={onSelectCharacter}
+      onToggleSelection={onToggleSelection}
     />
   );
 };

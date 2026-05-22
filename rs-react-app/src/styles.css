@@ -267,11 +267,31 @@ input:disabled {
 }
 
 .character-card {
+  position: relative;
   min-height: 180px;
   border: 1px solid color-mix(in srgb, var(--color-accent-strong) 18%, transparent);
   border-radius: 20px;
   background: var(--color-card-bg);
+  cursor: pointer;
   padding: 20px;
+}
+
+.selection-control {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.selection-control input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-accent);
 }
 
 .character-card[aria-current='true'] {

@@ -16,6 +16,7 @@ export interface CharactersState {
   readonly isLoading: boolean;
   readonly isSearchReady: boolean;
   readonly searchTerm: string;
+  readonly selectedCharacterIds: string[];
 }
 
 export const initialCharactersState: CharactersState = {
@@ -27,6 +28,7 @@ export const initialCharactersState: CharactersState = {
   isLoading: false,
   isSearchReady: false,
   searchTerm: '',
+  selectedCharacterIds: [],
 };
 
 export const fetchCharacters = createAsyncThunk<
@@ -59,6 +61,18 @@ export const charactersSlice = createSlice({
     setSearchTerm(state, action: PayloadAction<string>) {
       state.searchTerm = action.payload;
       state.errorMessage = '';
+    },
+    toggleSelectedCharacter(state, action: PayloadAction<string>) {
+      const characterId = action.payload;
+
+      if (state.selectedCharacterIds.includes(characterId)) {
+        state.selectedCharacterIds = state.selectedCharacterIds.filter(
+          (selectedCharacterId) => selectedCharacterId !== characterId
+        );
+        return;
+      }
+
+      state.selectedCharacterIds.push(characterId);
     },
   },
   extraReducers: (builder) => {
@@ -95,5 +109,6 @@ export const charactersSlice = createSlice({
   },
 });
 
-export const { initializeSearchTerm, setSearchTerm } = charactersSlice.actions;
+export const { initializeSearchTerm, setSearchTerm, toggleSelectedCharacter } =
+  charactersSlice.actions;
 export const charactersReducer = charactersSlice.reducer;

@@ -20,9 +20,10 @@ vi.mock('../api/potterApi', () => ({
   },
 }));
 
-const renderMain = (initialEntry = '/') =>
-  render(
-    <Provider store={createAppStore()}>
+const renderMain = (initialEntry = '/') => {
+  const store = createAppStore();
+  const view = render(
+    <Provider store={store}>
       <ThemeProvider>
         <MemoryRouter initialEntries={[initialEntry]}>
           <Routes>
@@ -32,6 +33,9 @@ const renderMain = (initialEntry = '/') =>
       </ThemeProvider>
     </Provider>
   );
+
+  return { store, ...view };
+};
 
 describe('Main', () => {
   beforeEach(() => {
@@ -99,6 +103,26 @@ describe('Main', () => {
     expect(mocks.fetchCharacters).toHaveBeenLastCalledWith('Luna', 1);
     expect(window.localStorage.getItem(SEARCH_STORAGE_KEY)).toBe('Luna');
     expect(screen.getByRole('searchbox')).toHaveValue('Luna');
+  });
+
+  it('persists selected items in Redux state across page navigation', async () => {
+    const user = userEvent.setup();
+    const { store } = renderMain();
+
+    await screen.findByText('Harry Potter');
+
+    await user.click(screen.getByRole('checkbox', { name: /select harry potter/i }));
+
+    expect(store.getState().characters.selectedCharacterIds).toEqual(['harry-potter']);
+    expect(screen.getByRole('checkbox', { name: /select harry potter/i })).toBeChecked();
+
+    await user.click(screen.getByRole('button', { name: /next/i }));
+
+    await waitFor(() => {
+      expect(mocks.fetchCharacters).toHaveBeenLastCalledWith('', 2);
+    });
+    expect(screen.getByRole('checkbox', { name: /select harry potter/i })).toBeChecked();
+    expect(store.getState().characters.selectedCharacterIds).toEqual(['harry-potter']);
   });
 
   it('handles successful API responses by updating rendered results', async () => {

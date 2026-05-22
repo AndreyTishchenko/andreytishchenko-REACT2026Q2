@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { characters } from '../test/testData';
 import { CardList } from './CardList';
@@ -17,6 +18,46 @@ describe('Results and CardList', () => {
     expect(screen.getByText('Harry Potter')).toBeInTheDocument();
     expect(screen.getByText('House: Gryffindor · Species: Human')).toBeInTheDocument();
     expect(screen.getByText('Hermione Granger')).toBeInTheDocument();
+  });
+
+  it('marks selected items with checked checkboxes', () => {
+    render(<CardList characters={characters} selectedCharacterIds={['harry-potter']} />);
+
+    expect(screen.getByRole('checkbox', { name: /select harry potter/i })).toBeChecked();
+    expect(
+      screen.getByRole('checkbox', { name: /select hermione granger/i })
+    ).not.toBeChecked();
+  });
+
+  it('unselects items through checkbox changes', async () => {
+    const user = userEvent.setup();
+    const selectedCharacterIds = new Set(['harry-potter']);
+
+    const { rerender } = render(
+      <CardList
+        characters={characters}
+        selectedCharacterIds={[...selectedCharacterIds]}
+        onToggleSelection={(characterId) => {
+          selectedCharacterIds.delete(characterId);
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole('checkbox', { name: /select harry potter/i }));
+
+    rerender(
+      <CardList
+        characters={characters}
+        selectedCharacterIds={[...selectedCharacterIds]}
+        onToggleSelection={(characterId) => {
+          selectedCharacterIds.delete(characterId);
+        }}
+      />
+    );
+
+    expect(
+      screen.getByRole('checkbox', { name: /select harry potter/i })
+    ).not.toBeChecked();
   });
 
   it('displays no results message when data array is empty', () => {
