@@ -215,7 +215,8 @@ input:disabled {
 }
 
 .search-form button,
-.danger-button {
+.danger-button,
+.refresh-button {
   border: 0;
   border-radius: 16px;
   padding: 14px 20px;
@@ -231,6 +232,12 @@ input:disabled {
   border: 1px solid rgba(247, 99, 99, 0.35);
   background: var(--color-danger-bg);
   color: var(--color-danger-text);
+}
+
+.refresh-button {
+  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
+  background: color-mix(in srgb, var(--color-accent-strong) 8%, transparent);
+  color: var(--color-accent-strong);
 }
 
 .results-panel {
@@ -258,6 +265,12 @@ input:disabled {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 22px;
+}
+
+.heading-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
 .card-list {
@@ -499,6 +512,11 @@ input:disabled {
   }
 
   .results-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .heading-actions {
     align-items: stretch;
     flex-direction: column;
   }

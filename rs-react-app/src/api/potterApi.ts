@@ -195,7 +195,7 @@ export const getPotterApiErrorMessage = (
 export const potterApi = createApi({
   reducerPath: 'potterApi',
   baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
-  tagTypes: ['Characters'],
+  tagTypes: ['Characters', 'CharacterDetails'],
   keepUnusedDataFor: potterApiCacheTtlSeconds,
   endpoints: (builder) => ({
     fetchCharacters: builder.query<CharacterSearchResult, FetchCharactersArgs>({
@@ -277,7 +277,7 @@ export const potterApi = createApi({
         return { data: mapCharacterDetails(response.data.data) };
       },
       providesTags: (_result, _error, characterId) => [
-        { type: 'Characters', id: characterId },
+        { type: 'CharacterDetails', id: characterId },
       ],
     }),
   }),
@@ -286,3 +286,5 @@ export const potterApi = createApi({
 export const { useFetchCharacterDetailsQuery, useFetchCharactersQuery } = potterApi;
 export const invalidateCharactersCache = () =>
   potterApi.util.invalidateTags([{ type: 'Characters', id: 'LIST' }]);
+export const invalidateCharacterDetailsCache = (characterId: string) =>
+  potterApi.util.invalidateTags([{ type: 'CharacterDetails', id: characterId }]);

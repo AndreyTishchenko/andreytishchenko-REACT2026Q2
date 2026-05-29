@@ -1,12 +1,15 @@
 import { useSearchParams } from 'react-router-dom';
 import {
   getPotterApiErrorMessage,
+  invalidateCharacterDetailsCache,
   useFetchCharacterDetailsQuery,
 } from '../api/potterApi';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { Loader } from '../components/Loader';
+import { useAppDispatch } from '../store/hooks';
 
 export function CharacterDetails() {
+  const dispatch = useAppDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const characterId = searchParams.get('details') ?? '';
   const { data: details, error, isFetching, isLoading } =
@@ -26,6 +29,10 @@ export function CharacterDetails() {
     setSearchParams(nextParams);
   };
 
+  const handleRefreshDetails = (): void => {
+    dispatch(invalidateCharacterDetailsCache(characterId));
+  };
+
   return (
     <aside className="panel details-panel" aria-labelledby="details-title">
       <div className="details-heading">
@@ -33,9 +40,19 @@ export function CharacterDetails() {
           <p className="section-label">Character details</p>
           <h2 id="details-title">{details?.name ?? 'Loading entry'}</h2>
         </div>
-        <button type="button" className="close-button" onClick={handleClose}>
-          Close
-        </button>
+        <div className="heading-actions">
+          <button
+            type="button"
+            className="refresh-button"
+            disabled={isQueryLoading}
+            onClick={handleRefreshDetails}
+          >
+            Refresh details
+          </button>
+          <button type="button" className="close-button" onClick={handleClose}>
+            Close
+          </button>
+        </div>
       </div>
       {isQueryLoading ? <Loader /> : null}
       {errorMessage ? <ErrorMessage message={errorMessage} /> : null}

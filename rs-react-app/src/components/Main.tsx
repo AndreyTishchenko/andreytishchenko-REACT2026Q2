@@ -1,6 +1,10 @@
 import { useCallback, useEffect } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
-import { getPotterApiErrorMessage, useFetchCharactersQuery } from '../api/potterApi';
+import {
+  getPotterApiErrorMessage,
+  invalidateCharactersCache,
+  useFetchCharactersQuery,
+} from '../api/potterApi';
 import { FIRST_PAGE } from '../constants/storage';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
@@ -106,6 +110,10 @@ export function Main() {
     dispatch(clearSelectedCharacters());
   }, [dispatch]);
 
+  const handleRefreshResults = useCallback((): void => {
+    dispatch(invalidateCharactersCache());
+  }, [dispatch]);
+
   return (
     <main className="app-shell">
       <Header />
@@ -123,6 +131,7 @@ export function Main() {
             isLoading={isQueryLoading}
             selectedCharacterId={selectedCharacterId}
             selectedCharacterIds={selectedCharacterIds}
+            onRefresh={handleRefreshResults}
             onSelectCharacter={handleSelectCharacter}
             onToggleSelection={handleToggleSelection}
           />

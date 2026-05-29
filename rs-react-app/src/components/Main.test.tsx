@@ -236,6 +236,25 @@ describe('Main', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it('invalidates and refetches cached list data when refreshing results', async () => {
+    const user = userEvent.setup();
+
+    renderMain();
+
+    await screen.findByText('Harry Potter');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole('button', { name: /refresh results/i }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      /loading magical records/i
+    );
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+    expect(getLastRequestUrl().searchParams.get('page[number]')).toBe('1');
+  });
+
   it('shows a details loader for uncached details and reuses cached details when reopened', async () => {
     const user = userEvent.setup();
     let resolveDetails: (value: Response) => void = () => {};
@@ -284,6 +303,28 @@ describe('Main', () => {
     expect(await screen.findByText('The Boy Who Lived')).toBeInTheDocument();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(requestCountAfterDetailsLoad);
+  });
+
+  it('invalidates and refetches cached details data when refreshing details', async () => {
+    const user = userEvent.setup();
+
+    renderMain();
+
+    await screen.findByText('Harry Potter');
+    await user.click(screen.getAllByRole('button', { name: /view details/i })[0]);
+
+    expect(await screen.findByText('The Boy Who Lived')).toBeInTheDocument();
+    const requestCountAfterDetailsLoad = fetchMock.mock.calls.length;
+
+    await user.click(screen.getByRole('button', { name: /refresh details/i }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      /loading magical records/i
+    );
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(requestCountAfterDetailsLoad + 1);
+    });
+    expect(getLastRequestUrl().pathname).toBe('/v1/characters/harry-potter');
   });
 
   it('handles successful API responses by updating rendered results', async () => {

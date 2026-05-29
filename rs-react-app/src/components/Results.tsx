@@ -10,6 +10,7 @@ interface ResultsProps {
   readonly isLoading: boolean;
   readonly selectedCharacterId?: string;
   readonly selectedCharacterIds?: readonly string[];
+  readonly onRefresh?: () => void;
   readonly onSelectCharacter?: (characterId: string) => void;
   readonly onToggleSelection?: (character: CharacterCardModel) => void;
 }
@@ -43,6 +44,8 @@ const renderContent = ({
 };
 
 export function Results(props: ResultsProps) {
+  const { isLoading, onRefresh } = props;
+
   return (
     <section className="panel results-panel" aria-labelledby="results-title">
       <div className="results-heading">
@@ -50,7 +53,17 @@ export function Results(props: ResultsProps) {
           <p className="section-label">Results</p>
           <h2 id="results-title">Archive entries</h2>
         </div>
-        <ErrorTrigger />
+        <div className="heading-actions">
+          <button
+            type="button"
+            className="refresh-button"
+            disabled={isLoading}
+            onClick={onRefresh}
+          >
+            Refresh results
+          </button>
+          <ErrorTrigger />
+        </div>
       </div>
       {renderContent(props)}
     </section>

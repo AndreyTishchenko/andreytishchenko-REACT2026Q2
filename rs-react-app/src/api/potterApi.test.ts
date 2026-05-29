@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getPotterApiErrorMessage,
+  invalidateCharacterDetailsCache,
   invalidateCharactersCache,
   potterApi,
 } from './potterApi';
@@ -114,6 +115,28 @@ describe('potterApi', () => {
     const url = getRequestUrl(fetchMock.mock.calls[0][0]);
 
     expect(url.searchParams.has('filter[name_cont]')).toBe(false);
+  });
+
+  it('reuses cached query results for identical character search arguments', async () => {
+    fetchMock.mockImplementation(() => Promise.resolve(jsonResponse(potterResponse)));
+    const store = createAppStore();
+    const queryArgs = { page: 1, searchTerm: 'Luna' };
+
+    const firstRequest = store.dispatch(
+      potterApi.endpoints.fetchCharacters.initiate(queryArgs)
+    );
+    await vi.advanceTimersByTimeAsync(250);
+    await firstRequest.unwrap();
+
+    const secondRequest = store.dispatch(
+      potterApi.endpoints.fetchCharacters.initiate(queryArgs)
+    );
+    await secondRequest.unwrap();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    firstRequest.unsubscribe();
+    secondRequest.unsubscribe();
   });
 
   it('handles 4xx and 5xx API error responses', async () => {
@@ -282,6 +305,13 @@ describe('potterApi', () => {
   it('exposes cache invalidation tags for character lists', () => {
     expect(invalidateCharactersCache()).toMatchObject({
       payload: [{ id: 'LIST', type: 'Characters' }],
+      type: 'potterApi/invalidateTags',
+    });
+  });
+
+  it('exposes cache invalidation tags for character details', () => {
+    expect(invalidateCharacterDetailsCache('harry-potter')).toMatchObject({
+      payload: [{ id: 'harry-potter', type: 'CharacterDetails' }],
       type: 'potterApi/invalidateTags',
     });
   });
