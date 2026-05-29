@@ -325,6 +325,35 @@ describe('Main', () => {
     expect(screen.queryByRole('article')).not.toBeInTheDocument();
   });
 
+  it('handles character detail API errors by rendering a clear message', async () => {
+    const user = userEvent.setup();
+
+    fetchMock.mockImplementation((request) => {
+      const url = getRequestUrl(request);
+
+      return Promise.resolve(
+        url.pathname.endsWith('/harry-potter')
+          ? textResponse('Missing character', 404)
+          : jsonResponse(apiResponse)
+      );
+    });
+
+    renderMain();
+
+    await screen.findByText('Harry Potter');
+    await user.click(screen.getAllByRole('button', { name: /view details/i })[0]);
+
+    expect(
+      await screen.findByText(
+        'The Ministry archives could not find that character (404).'
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The Ministry archives could not find that character (404).'
+    );
+    expect(screen.queryByText('The Boy Who Lived')).not.toBeInTheDocument();
+  });
+
   it('uses fallback message for unexpected API payloads', async () => {
     fetchMock.mockResolvedValue(jsonResponse({ bad: 'shape' }));
 

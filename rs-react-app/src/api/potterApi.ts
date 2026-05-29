@@ -149,9 +149,15 @@ const getErrorStatus = (error: { readonly status?: unknown }): string | number =
     return record.originalStatus;
   }
 
-  return typeof error.status === 'string' || typeof error.status === 'number'
-    ? error.status
-    : 'unknown';
+  if (error.status === 'FETCH_ERROR') {
+    return 'network error';
+  }
+
+  if (error.status === 'TIMEOUT_ERROR') {
+    return 'request timed out';
+  }
+
+  return typeof error.status === 'number' ? error.status : 'unknown error';
 };
 
 const buildApiError = (

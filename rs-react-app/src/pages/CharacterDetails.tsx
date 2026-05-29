@@ -3,6 +3,7 @@ import {
   getPotterApiErrorMessage,
   useFetchCharacterDetailsQuery,
 } from '../api/potterApi';
+import { ErrorMessage } from '../components/ErrorMessage';
 import { Loader } from '../components/Loader';
 
 export function CharacterDetails() {
@@ -37,7 +38,7 @@ export function CharacterDetails() {
         </button>
       </div>
       {isQueryLoading ? <Loader /> : null}
-      {errorMessage ? <p className="error-message">{errorMessage}</p> : null}
+      {errorMessage ? <ErrorMessage message={errorMessage} /> : null}
       {details && !isQueryLoading ? (
         <dl className="details-list">
           <div>

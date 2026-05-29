@@ -148,6 +148,23 @@ describe('potterApi', () => {
     await serverAssertion;
   });
 
+  it('formats network errors as human-readable failures', async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    const store = createAppStore();
+
+    const networkRequest = store
+      .dispatch(
+        potterApi.endpoints.fetchCharacters.initiate({ searchTerm: 'Harry' })
+      )
+      .unwrap();
+    const networkAssertion = expect(networkRequest).rejects.toMatchObject({
+      error:
+        'The Ministry archives refused the request (network error). Please try again later.',
+    });
+    await vi.advanceTimersByTimeAsync(250);
+    await networkAssertion;
+  });
+
   it('rejects unexpected response shapes', async () => {
     fetchMock.mockResolvedValue(jsonResponse({ data: [{ id: 1 }] }));
     const store = createAppStore();
