@@ -1,22 +1,14 @@
-import { describe, expect, it, vi } from 'vitest';
-import { PotterApi } from '../api/potterApi';
+import { describe, expect, it } from 'vitest';
 import { characters } from '../test/testData';
 import {
   charactersReducer,
   clearSelectedCharacters,
-  fetchCharacters,
   initialCharactersState,
   initializeSearchTerm,
   setSearchTerm,
   toggleSelectedCharacter,
 } from './charactersSlice';
 import { createAppStore } from './store';
-
-vi.mock('../api/potterApi', () => ({
-  PotterApi: {
-    fetchCharacters: vi.fn(),
-  },
-}));
 
 describe('charactersSlice', () => {
   it('initializes the persisted search term', () => {
@@ -30,13 +22,9 @@ describe('charactersSlice', () => {
   });
 
   it('updates the active search term and clears stale errors', () => {
-    const state = charactersReducer(
-      { ...initialCharactersState, errorMessage: 'Old error' },
-      setSearchTerm('Luna')
-    );
+    const state = charactersReducer(initialCharactersState, setSearchTerm('Luna'));
 
     expect(state.searchTerm).toBe('Luna');
-    expect(state.errorMessage).toBe('');
   });
 
   it('stores and removes selected character ids', () => {
@@ -69,37 +57,9 @@ describe('charactersSlice', () => {
     expect(state.selectedCharacters).toEqual([]);
   });
 
-  it('stores fulfilled character search results', async () => {
-    vi.mocked(PotterApi.fetchCharacters).mockResolvedValue({
-      characters,
-      hasNextPage: true,
-    });
+  it('creates a store with the API reducer configured', () => {
     const store = createAppStore();
 
-    await store.dispatch(fetchCharacters({ page: 2, searchTerm: 'Harry' }));
-
-    expect(PotterApi.fetchCharacters).toHaveBeenCalledWith('Harry', 2);
-    expect(store.getState().characters).toMatchObject({
-      characters,
-      errorMessage: '',
-      hasLoadedOnce: true,
-      hasNextPage: true,
-      isLoading: false,
-    });
-  });
-
-  it('stores rejected character search messages', async () => {
-    vi.mocked(PotterApi.fetchCharacters).mockRejectedValue(new Error('Network broke'));
-    const store = createAppStore();
-
-    await store.dispatch(fetchCharacters({ page: 1, searchTerm: '' }));
-
-    expect(store.getState().characters).toMatchObject({
-      characters: [],
-      errorMessage: 'Network broke',
-      hasLoadedOnce: true,
-      hasNextPage: false,
-      isLoading: false,
-    });
+    expect(store.getState()).toHaveProperty('potterApi');
   });
 });

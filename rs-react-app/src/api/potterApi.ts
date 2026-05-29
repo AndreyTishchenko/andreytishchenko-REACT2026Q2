@@ -1,3 +1,5 @@
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import type { FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { FIRST_PAGE, PAGE_SIZE } from '../constants/storage';
 import type {
   CharacterCardModel,
@@ -9,8 +11,24 @@ import type {
   PotterCharactersResponse,
 } from '../types/potter';
 
-const API_BASE_URL = 'https://api.potterdb.com/v1/characters';
+const API_BASE_URL = 'https://api.potterdb.com/v1';
 const ARTIFICIAL_DELAY_MS = 250;
+const DEFAULT_CACHE_TTL_SECONDS = 60;
+
+interface FetchCharactersArgs {
+  readonly page?: number;
+  readonly searchTerm: string;
+}
+
+const getCacheTtlSeconds = (): number => {
+  const parsedTtl = Number(import.meta.env.VITE_RTK_QUERY_CACHE_TTL_SECONDS);
+
+  return Number.isFinite(parsedTtl) && parsedTtl >= 0
+    ? parsedTtl
+    : DEFAULT_CACHE_TTL_SECONDS;
+};
+
+export const potterApiCacheTtlSeconds = getCacheTtlSeconds();
 
 const isStringArray = (value: unknown): value is readonly string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string');
@@ -124,63 +142,141 @@ const mapCharacterDetails = (
   };
 };
 
-export class PotterApi {
-  static async fetchCharacters(
-    searchTerm: string,
-    page = FIRST_PAGE
-  ): Promise<CharacterSearchResult> {
-    const url = new URL(API_BASE_URL);
-    url.searchParams.set('page[number]', String(page));
-    url.searchParams.set('page[size]', String(PAGE_SIZE));
-    url.searchParams.set('sort', 'name');
+const getErrorStatus = (error: { readonly status?: unknown }): string | number => {
+  const record = error as Record<string, unknown>;
 
-    if (searchTerm.length > 0) {
-      url.searchParams.set('filter[name_cont]', searchTerm);
-    }
-
-    await delay();
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(
-        `The Ministry archives refused the request (${response.status}). Please try again later.`
-      );
-    }
-
-    const json: unknown = await response.json();
-
-    if (!isCharactersResponse(json)) {
-      throw new Error('PotterDB returned data in an unexpected format. Tragic, but readable.');
-    }
-
-    return {
-      characters: json.data.map(mapCharacter),
-      hasNextPage: Boolean(json.links?.next),
-    };
+  if (typeof record.originalStatus === 'number') {
+    return record.originalStatus;
   }
 
-  static async fetchCharacterDetails(
-    characterId: string
-  ): Promise<CharacterDetailsModel> {
-    const url = new URL(`${API_BASE_URL}/${characterId}`);
+  return typeof error.status === 'string' || typeof error.status === 'number'
+    ? error.status
+    : 'unknown';
+};
 
-    await delay();
+const buildApiError = (
+  error: FetchBaseQueryError,
+  message: string
+): FetchBaseQueryError => {
+  const status = getErrorStatus(error);
 
-    const response = await fetch(url);
+  return typeof status === 'number'
+    ? { status, data: message }
+    : { status: 'CUSTOM_ERROR', error: message };
+};
 
-    if (!response.ok) {
-      throw new Error(
-        `The Ministry archives could not find that character (${response.status}).`
-      );
-    }
-
-    const json: unknown = await response.json();
-
-    if (!isCharacterResponse(json)) {
-      throw new Error('PotterDB returned character details in an unexpected format.');
-    }
-
-    return mapCharacterDetails(json.data);
+export const getPotterApiErrorMessage = (
+  error: unknown,
+  fallbackMessage: string
+): string => {
+  if (typeof error !== 'object' || error === null) {
+    return fallbackMessage;
   }
-}
+
+  const record = error as Record<string, unknown>;
+
+  if (typeof record.data === 'string') {
+    return record.data;
+  }
+
+  if (typeof record.error === 'string') {
+    return record.error;
+  }
+
+  return fallbackMessage;
+};
+
+export const potterApi = createApi({
+  reducerPath: 'potterApi',
+  baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
+  tagTypes: ['Characters'],
+  keepUnusedDataFor: potterApiCacheTtlSeconds,
+  endpoints: (builder) => ({
+    fetchCharacters: builder.query<CharacterSearchResult, FetchCharactersArgs>({
+      async queryFn({ page = FIRST_PAGE, searchTerm }, _api, _extraOptions, fetchWithBQ) {
+        await delay();
+
+        const params: Record<string, string> = {
+          'page[number]': String(page),
+          'page[size]': String(PAGE_SIZE),
+          sort: 'name',
+        };
+
+        if (searchTerm.length > 0) {
+          params['filter[name_cont]'] = searchTerm;
+        }
+
+        const response = await fetchWithBQ({ url: '/characters', params });
+
+        if (response.error) {
+          const errorMessage = `The Ministry archives refused the request (${getErrorStatus(
+            response.error
+          )}). Please try again later.`;
+
+          return {
+            error: buildApiError(response.error, errorMessage),
+          };
+        }
+
+        if (!isCharactersResponse(response.data)) {
+          return {
+            error: {
+              status: 'CUSTOM_ERROR',
+              error:
+                'PotterDB returned data in an unexpected format. Tragic, but readable.',
+            },
+          };
+        }
+
+        return {
+          data: {
+            characters: response.data.data.map(mapCharacter),
+            hasNextPage: Boolean(response.data.links?.next),
+          },
+        };
+      },
+      providesTags: (result) => [
+        { type: 'Characters', id: 'LIST' },
+        ...(result?.characters.map((character) => ({
+          type: 'Characters' as const,
+          id: character.id,
+        })) ?? []),
+      ],
+    }),
+    fetchCharacterDetails: builder.query<CharacterDetailsModel, string>({
+      async queryFn(characterId, _api, _extraOptions, fetchWithBQ) {
+        await delay();
+
+        const response = await fetchWithBQ(`/characters/${characterId}`);
+
+        if (response.error) {
+          const errorMessage = `The Ministry archives could not find that character (${getErrorStatus(
+            response.error
+          )}).`;
+
+          return {
+            error: buildApiError(response.error, errorMessage),
+          };
+        }
+
+        if (!isCharacterResponse(response.data)) {
+          return {
+            error: {
+              status: 'CUSTOM_ERROR',
+              error: 'PotterDB returned character details in an unexpected format.',
+            },
+          };
+        }
+
+        return { data: mapCharacterDetails(response.data.data) };
+      },
+      providesTags: (_result, _error, characterId) => [
+        { type: 'Characters', id: characterId },
+      ],
+    }),
+  }),
+});
+
+export const { useFetchCharacterDetailsQuery, useFetchCharactersQuery } = potterApi;
+export const invalidateCharactersCache = () =>
+  potterApi.util.invalidateTags([{ type: 'Characters', id: 'LIST' }]);

@@ -7,18 +7,73 @@ import { SEARCH_STORAGE_KEY } from '../constants/storage';
 import { ThemeProvider } from '../context/ThemeProvider';
 import { createAppStore } from '../store/store';
 import { characters } from '../test/testData';
-import type { CharacterSearchResult } from '../types/potter';
+import type { PotterCharactersResponse } from '../types/potter';
 import { Main } from './Main';
 
-const mocks = vi.hoisted(() => ({
-  fetchCharacters: vi.fn(),
-}));
+const fetchMock = vi.fn();
 
-vi.mock('../api/potterApi', () => ({
-  PotterApi: {
-    fetchCharacters: mocks.fetchCharacters,
+const apiResponse: PotterCharactersResponse = {
+  data: [
+    {
+      id: 'harry-potter',
+      type: 'character',
+      attributes: {
+        name: 'Harry Potter',
+        alias_names: null,
+        house: 'Gryffindor',
+        species: 'Human',
+        gender: null,
+        born: null,
+        died: null,
+        jobs: null,
+      },
+    },
+    {
+      id: 'hermione-granger',
+      type: 'character',
+      attributes: {
+        name: 'Hermione Granger',
+        alias_names: null,
+        house: 'Gryffindor',
+        species: null,
+        gender: null,
+        born: null,
+        died: null,
+        jobs: ['Student'],
+      },
+    },
+  ],
+  links: {
+    next: 'https://api.potterdb.com/v1/characters?page[number]=2',
   },
-}));
+};
+
+const getLastRequestUrl = (): URL => {
+  const request = fetchMock.mock.calls.at(-1)?.[0];
+
+  if (request instanceof Request) {
+    return new URL(request.url);
+  }
+
+  if (typeof request === 'string') {
+    return new URL(request);
+  }
+
+  throw new Error('Expected the API to be called.');
+};
+
+const jsonResponse = (body: unknown, status = 200): Response =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+const textResponse = (body: string, status: number): Response =>
+  new Response(body, { status });
+
+const mockApiSuccess = (response: PotterCharactersResponse = apiResponse): void => {
+  fetchMock.mockImplementation(() => Promise.resolve(jsonResponse(response)));
+};
 
 const renderMain = (initialEntry = '/') => {
   const store = createAppStore();
@@ -39,19 +94,18 @@ const renderMain = (initialEntry = '/') => {
 
 describe('Main', () => {
   beforeEach(() => {
-    mocks.fetchCharacters.mockResolvedValue({
-      characters,
-      hasNextPage: true,
-    });
+    fetchMock.mockReset();
+    mockApiSuccess();
+    globalThis.fetch = fetchMock as typeof fetch;
   });
 
   it('makes initial API call on component mount', async () => {
     renderMain();
 
-    await waitFor(() => {
-      expect(mocks.fetchCharacters).toHaveBeenCalledWith('', 1);
-    });
     expect(await screen.findByText('Harry Potter')).toBeInTheDocument();
+    const url = getLastRequestUrl();
+    expect(url.searchParams.get('filter[name_cont]')).toBe(null);
+    expect(url.searchParams.get('page[number]')).toBe('1');
   });
 
   it('handles search term from localStorage on initial load', async () => {
@@ -59,18 +113,18 @@ describe('Main', () => {
 
     renderMain();
 
-    await waitFor(() => {
-      expect(mocks.fetchCharacters).toHaveBeenCalledWith('Hermione', 1);
-    });
     expect(screen.getByRole('searchbox')).toHaveValue('Hermione');
     expect(await screen.findByText('Hermione Granger')).toBeInTheDocument();
+    const url = getLastRequestUrl();
+    expect(url.searchParams.get('filter[name_cont]')).toBe('Hermione');
+    expect(url.searchParams.get('page[number]')).toBe('1');
   });
 
   it('manages loading states during API calls', async () => {
-    let resolveCharacters: (value: CharacterSearchResult) => void = () => {};
-    mocks.fetchCharacters.mockReturnValue(
+    let resolveResponse: (value: Response) => void = () => {};
+    fetchMock.mockReturnValue(
       new Promise((resolve) => {
-        resolveCharacters = resolve;
+        resolveResponse = resolve;
       })
     );
 
@@ -80,10 +134,7 @@ describe('Main', () => {
       /loading magical records/i
     );
 
-    resolveCharacters({
-      characters,
-      hasNextPage: false,
-    });
+    resolveResponse(jsonResponse(apiResponse));
 
     await waitFor(() => {
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -100,7 +151,11 @@ describe('Main', () => {
     await user.type(screen.getByRole('searchbox'), 'Luna');
     await user.click(screen.getByRole('button', { name: /search/i }));
 
-    expect(mocks.fetchCharacters).toHaveBeenLastCalledWith('Luna', 1);
+    await waitFor(() => {
+      const url = getLastRequestUrl();
+      expect(url.searchParams.get('filter[name_cont]')).toBe('Luna');
+      expect(url.searchParams.get('page[number]')).toBe('1');
+    });
     expect(window.localStorage.getItem(SEARCH_STORAGE_KEY)).toBe('Luna');
     expect(screen.getByRole('searchbox')).toHaveValue('Luna');
   });
@@ -119,22 +174,31 @@ describe('Main', () => {
     await user.click(screen.getByRole('button', { name: /next/i }));
 
     await waitFor(() => {
-      expect(mocks.fetchCharacters).toHaveBeenLastCalledWith('', 2);
+      expect(getLastRequestUrl().searchParams.get('page[number]')).toBe('2');
     });
+    await screen.findByText('Harry Potter');
     expect(screen.getByRole('checkbox', { name: /select harry potter/i })).toBeChecked();
     expect(store.getState().characters.selectedCharacterIds).toEqual(['harry-potter']);
   });
 
   it('handles successful API responses by updating rendered results', async () => {
-    mocks.fetchCharacters.mockResolvedValue({
-      characters: [
+    mockApiSuccess({
+      data: [
         {
           id: 'luna',
-          name: 'Luna Lovegood',
-          description: 'House: Ravenclaw',
+          type: 'character',
+          attributes: {
+            name: 'Luna Lovegood',
+            alias_names: null,
+            house: 'Ravenclaw',
+            species: null,
+            gender: null,
+            born: null,
+            died: null,
+            jobs: null,
+          },
         },
       ],
-      hasNextPage: false,
     });
 
     renderMain();
@@ -144,21 +208,39 @@ describe('Main', () => {
   });
 
   it('handles API error responses by rendering an error message', async () => {
-    mocks.fetchCharacters.mockRejectedValue(new Error('Network broke'));
-
-    renderMain();
-
-    expect(await screen.findByText('Network broke')).toBeInTheDocument();
-    expect(screen.queryByRole('article')).not.toBeInTheDocument();
-  });
-
-  it('uses fallback message for unknown API failures', async () => {
-    mocks.fetchCharacters.mockRejectedValue('bad');
+    fetchMock.mockResolvedValue(textResponse('Network broke', 500));
 
     renderMain();
 
     expect(
-      await screen.findByText('The request failed for an unknown reason.')
+      await screen.findByText(
+        'The Ministry archives refused the request (500). Please try again later.'
+      )
     ).toBeInTheDocument();
+    expect(screen.queryByRole('article')).not.toBeInTheDocument();
+  });
+
+  it('uses fallback message for unexpected API payloads', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ bad: 'shape' }));
+
+    renderMain();
+
+    expect(
+      await screen.findByText(
+        'PotterDB returned data in an unexpected format. Tragic, but readable.'
+      )
+    ).toBeInTheDocument();
+  });
+
+  it('keeps selected character models in Redux state', async () => {
+    const user = userEvent.setup();
+    const { store } = renderMain();
+
+    await screen.findByText('Harry Potter');
+    await user.click(screen.getByRole('checkbox', { name: /select harry potter/i }));
+
+    expect(store.getState().characters.selectedCharacters[0]).toMatchObject(
+      characters[0]
+    );
   });
 });

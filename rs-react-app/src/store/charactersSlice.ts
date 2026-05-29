@@ -1,19 +1,7 @@
-import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { PotterApi } from '../api/potterApi';
-import type { CharacterCardModel, CharacterSearchResult } from '../types/potter';
-
-interface FetchCharactersArgs {
-  readonly page: number;
-  readonly searchTerm: string;
-}
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { CharacterCardModel } from '../types/potter';
 
 export interface CharactersState {
-  readonly characters: CharacterCardModel[];
-  readonly currentRequestId?: string;
-  readonly errorMessage: string;
-  readonly hasLoadedOnce: boolean;
-  readonly hasNextPage: boolean;
-  readonly isLoading: boolean;
   readonly isSearchReady: boolean;
   readonly searchTerm: string;
   readonly selectedCharacters: CharacterCardModel[];
@@ -21,36 +9,11 @@ export interface CharactersState {
 }
 
 export const initialCharactersState: CharactersState = {
-  characters: [],
-  currentRequestId: undefined,
-  errorMessage: '',
-  hasLoadedOnce: false,
-  hasNextPage: false,
-  isLoading: false,
   isSearchReady: false,
   searchTerm: '',
   selectedCharacters: [],
   selectedCharacterIds: [],
 };
-
-export const fetchCharacters = createAsyncThunk<
-  CharacterSearchResult,
-  FetchCharactersArgs,
-  { rejectValue: string }
->(
-  'characters/fetchCharacters',
-  async ({ page, searchTerm }, { rejectWithValue }) => {
-    try {
-      return await PotterApi.fetchCharacters(searchTerm, page);
-    } catch (error) {
-      return rejectWithValue(
-        error instanceof Error
-          ? error.message
-          : 'The request failed for an unknown reason.'
-      );
-    }
-  }
-);
 
 export const charactersSlice = createSlice({
   name: 'characters',
@@ -62,7 +25,6 @@ export const charactersSlice = createSlice({
     },
     setSearchTerm(state, action: PayloadAction<string>) {
       state.searchTerm = action.payload;
-      state.errorMessage = '';
     },
     clearSelectedCharacters(state) {
       state.selectedCharacters = [];
@@ -85,38 +47,6 @@ export const charactersSlice = createSlice({
       state.selectedCharacterIds.push(characterId);
       state.selectedCharacters.push(character);
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchCharacters.pending, (state, action) => {
-        state.currentRequestId = action.meta.requestId;
-        state.errorMessage = '';
-        state.isLoading = true;
-      })
-      .addCase(fetchCharacters.fulfilled, (state, action) => {
-        if (state.currentRequestId !== action.meta.requestId) {
-          return;
-        }
-
-        state.characters = [...action.payload.characters];
-        state.currentRequestId = undefined;
-        state.hasLoadedOnce = true;
-        state.hasNextPage = action.payload.hasNextPage;
-        state.isLoading = false;
-      })
-      .addCase(fetchCharacters.rejected, (state, action) => {
-        if (state.currentRequestId !== action.meta.requestId) {
-          return;
-        }
-
-        state.characters = [];
-        state.currentRequestId = undefined;
-        state.errorMessage =
-          action.payload ?? 'The request failed for an unknown reason.';
-        state.hasLoadedOnce = true;
-        state.hasNextPage = false;
-        state.isLoading = false;
-      });
   },
 });
 

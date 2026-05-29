@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react';
 import { Outlet, useSearchParams } from 'react-router-dom';
+import { getPotterApiErrorMessage, useFetchCharactersQuery } from '../api/potterApi';
 import { FIRST_PAGE } from '../constants/storage';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   clearSelectedCharacters,
-  fetchCharacters,
   initializeSearchTerm,
   setSearchTerm,
   toggleSelectedCharacter,
@@ -27,11 +27,6 @@ const getUrlPage = (searchParams: URLSearchParams): number => {
 export function Main() {
   const dispatch = useAppDispatch();
   const {
-    characters,
-    errorMessage,
-    hasLoadedOnce,
-    hasNextPage,
-    isLoading,
     isSearchReady,
     searchTerm,
     selectedCharacters,
@@ -40,6 +35,22 @@ export function Main() {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = getUrlPage(searchParams);
   const selectedCharacterId = searchParams.get('details') ?? undefined;
+  const {
+    data,
+    error,
+    isFetching,
+    isLoading,
+    isSuccess,
+  } = useFetchCharactersQuery(
+    { page: currentPage, searchTerm },
+    { skip: !isSearchReady }
+  );
+  const isQueryLoading = isLoading || isFetching;
+  const errorMessage = error
+    ? getPotterApiErrorMessage(error, 'The request failed for an unknown reason.')
+    : '';
+  const characters = data?.characters ?? [];
+  const hasNextPage = data?.hasNextPage ?? false;
 
   useEffect(() => {
     dispatch(initializeSearchTerm(readStoredSearchTerm()));
@@ -52,14 +63,6 @@ export function Main() {
       setSearchParams(nextParams, { replace: true });
     }
   }, [currentPage, searchParams, setSearchParams]);
-
-  useEffect(() => {
-    if (!isSearchReady) {
-      return;
-    }
-
-    void dispatch(fetchCharacters({ page: currentPage, searchTerm }));
-  }, [currentPage, dispatch, isSearchReady, searchTerm]);
 
   const handleSearch = useCallback(
     (nextSearchTerm: string): void => {
@@ -109,7 +112,7 @@ export function Main() {
       <Search
         key={searchTerm}
         initialValue={searchTerm}
-        isLoading={isLoading}
+        isLoading={isQueryLoading}
         onSearch={handleSearch}
       />
       <div className={selectedCharacterId ? 'content-layout has-details' : 'content-layout'}>
@@ -117,17 +120,17 @@ export function Main() {
           <Results
             characters={characters}
             errorMessage={errorMessage}
-            isLoading={isLoading}
+            isLoading={isQueryLoading}
             selectedCharacterId={selectedCharacterId}
             selectedCharacterIds={selectedCharacterIds}
             onSelectCharacter={handleSelectCharacter}
             onToggleSelection={handleToggleSelection}
           />
-          {hasLoadedOnce && !errorMessage ? (
+          {isSuccess && !errorMessage ? (
             <Pagination
               currentPage={currentPage}
               hasNextPage={hasNextPage}
-              isDisabled={isLoading}
+              isDisabled={isQueryLoading}
               onPageChange={handlePageChange}
             />
           ) : null}

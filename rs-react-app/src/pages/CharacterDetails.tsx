@@ -1,49 +1,19 @@
-import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { PotterApi } from '../api/potterApi';
-import type { CharacterDetailsModel } from '../types/potter';
+import {
+  getPotterApiErrorMessage,
+  useFetchCharacterDetailsQuery,
+} from '../api/potterApi';
 import { Loader } from '../components/Loader';
 
 export function CharacterDetails() {
   const [searchParams, setSearchParams] = useSearchParams();
   const characterId = searchParams.get('details') ?? '';
-  const [details, setDetails] = useState<CharacterDetailsModel | null>(null);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(() => Boolean(characterId));
-
-  useEffect(() => {
-    if (!characterId) {
-      return;
-    }
-
-    let isActive = true;
-
-    PotterApi.fetchCharacterDetails(characterId)
-      .then((loadedDetails) => {
-        if (!isActive) {
-          return;
-        }
-
-        setDetails(loadedDetails);
-        setIsLoading(false);
-      })
-      .catch((error: unknown) => {
-        if (!isActive) {
-          return;
-        }
-
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : 'The character details failed to load.'
-        );
-        setIsLoading(false);
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, [characterId]);
+  const { data: details, error, isFetching, isLoading } =
+    useFetchCharacterDetailsQuery(characterId, { skip: !characterId });
+  const isQueryLoading = isLoading || isFetching;
+  const errorMessage = error
+    ? getPotterApiErrorMessage(error, 'The character details failed to load.')
+    : '';
 
   if (!characterId) {
     return null;
@@ -66,9 +36,9 @@ export function CharacterDetails() {
           Close
         </button>
       </div>
-      {isLoading ? <Loader /> : null}
+      {isQueryLoading ? <Loader /> : null}
       {errorMessage ? <p className="error-message">{errorMessage}</p> : null}
-      {details && !isLoading ? (
+      {details && !isQueryLoading ? (
         <dl className="details-list">
           <div>
             <dt>House</dt>
