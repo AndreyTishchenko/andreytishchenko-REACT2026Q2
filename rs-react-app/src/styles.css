@@ -19,7 +19,13 @@
   color: var(--color-body);
   background: var(--color-background);
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
   line-height: 1.5;
   font-weight: 400;
   font-synthesis: none;
@@ -57,8 +63,17 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--color-accent) 35%, transparent), transparent 32rem),
-    linear-gradient(135deg, var(--color-background-soft) 0%, var(--color-background-mid) 45%, var(--color-background-end) 100%);
+    radial-gradient(
+      circle at top left,
+      color-mix(in srgb, var(--color-accent) 35%, transparent),
+      transparent 32rem
+    ),
+    linear-gradient(
+      135deg,
+      var(--color-background-soft) 0%,
+      var(--color-background-mid) 45%,
+      var(--color-background-end) 100%
+    );
 }
 
 button,
@@ -110,7 +125,8 @@ input:disabled {
 }
 
 .app-nav a {
-  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 24%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-strong) 24%, transparent);
   border-radius: 999px;
   padding: 8px 14px;
   text-decoration: none;
@@ -201,7 +217,8 @@ input:disabled {
 
 .search-form input {
   width: 100%;
-  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
   border-radius: 16px;
   outline: none;
   background: var(--color-control-bg);
@@ -224,7 +241,11 @@ input:disabled {
 }
 
 .search-form button {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-deep));
+  background: linear-gradient(
+    135deg,
+    var(--color-accent),
+    var(--color-accent-deep)
+  );
   color: var(--color-background);
 }
 
@@ -235,7 +256,8 @@ input:disabled {
 }
 
 .refresh-button {
-  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
   background: color-mix(in srgb, var(--color-accent-strong) 8%, transparent);
   color: var(--color-accent-strong);
 }
@@ -282,7 +304,8 @@ input:disabled {
 .character-card {
   position: relative;
   min-height: 180px;
-  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 18%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-strong) 18%, transparent);
   border-radius: 20px;
   background: var(--color-card-bg);
   cursor: pointer;
@@ -326,7 +349,8 @@ input:disabled {
 .card-link,
 .close-button,
 .pagination button {
-  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
   border-radius: 12px;
   background: color-mix(in srgb, var(--color-accent-strong) 8%, transparent);
   color: var(--color-accent-strong);
@@ -363,7 +387,8 @@ input:disabled {
 }
 
 .details-list div {
-  border-top: 1px solid color-mix(in srgb, var(--color-accent-strong) 14%, transparent);
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-accent-strong) 14%, transparent);
   padding-top: 12px;
 }
 
@@ -410,7 +435,11 @@ input:disabled {
   margin: 28px auto 0;
   border: 1px solid color-mix(in srgb, var(--color-accent) 32%, transparent);
   border-radius: 18px;
-  background: linear-gradient(135deg, var(--color-panel-top), var(--color-panel-bottom));
+  background: linear-gradient(
+    135deg,
+    var(--color-panel-top),
+    var(--color-panel-bottom)
+  );
   box-shadow: 0 16px 50px var(--shadow-panel);
   padding: 14px 16px;
 }
@@ -427,7 +456,8 @@ input:disabled {
 }
 
 .selected-flyout button {
-  border: 1px solid color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
   border-radius: 12px;
   background: color-mix(in srgb, var(--color-accent-strong) 8%, transparent);
   color: var(--color-accent-strong);
@@ -441,7 +471,8 @@ input:disabled {
   display: grid;
   min-height: 320px;
   place-items: center;
-  border: 1px dashed color-mix(in srgb, var(--color-accent-strong) 18%, transparent);
+  border: 1px dashed
+    color-mix(in srgb, var(--color-accent-strong) 18%, transparent);
   border-radius: 20px;
   color: var(--color-muted);
   text-align: center;
@@ -454,7 +485,8 @@ input:disabled {
 .spinner {
   width: 52px;
   height: 52px;
-  border: 5px solid color-mix(in srgb, var(--color-accent-strong) 18%, transparent);
+  border: 5px solid
+    color-mix(in srgb, var(--color-accent-strong) 18%, transparent);
   border-top-color: var(--color-accent);
   border-radius: 50%;
   animation: spin 0.75s linear infinite;

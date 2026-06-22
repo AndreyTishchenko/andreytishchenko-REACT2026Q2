@@ -22,7 +22,10 @@ describe('charactersSlice', () => {
   });
 
   it('updates the active search term and clears stale errors', () => {
-    const state = charactersReducer(initialCharactersState, setSearchTerm('Luna'));
+    const state = charactersReducer(
+      initialCharactersState,
+      setSearchTerm('Luna')
+    );
 
     expect(state.searchTerm).toBe('Luna');
   });

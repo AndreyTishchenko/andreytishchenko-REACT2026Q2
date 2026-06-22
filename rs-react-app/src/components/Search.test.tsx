@@ -62,7 +62,9 @@ describe('Search', () => {
   it('uses provided initial value before localStorage', () => {
     window.localStorage.setItem(SEARCH_STORAGE_KEY, 'Stored');
 
-    render(<Search initialValue="Provided" isLoading={false} onSearch={vi.fn()} />);
+    render(
+      <Search initialValue="Provided" isLoading={false} onSearch={vi.fn()} />
+    );
 
     expect(screen.getByRole('searchbox')).toHaveValue('Provided');
   });

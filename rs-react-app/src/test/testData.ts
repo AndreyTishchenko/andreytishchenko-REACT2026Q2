@@ -1,4 +1,7 @@
-import type { CharacterCardModel, PotterCharactersResponse } from '../types/potter';
+import type {
+  CharacterCardModel,
+  PotterCharactersResponse,
+} from '../types/potter';
 
 export const characters: CharacterCardModel[] = [
   {

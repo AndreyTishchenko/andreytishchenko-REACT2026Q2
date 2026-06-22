@@ -7,4 +7,6 @@ export interface ThemeContextValue {
   readonly toggleTheme: () => void;
 }
 
-export const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+export const ThemeContext = createContext<ThemeContextValue | undefined>(
+  undefined
+);

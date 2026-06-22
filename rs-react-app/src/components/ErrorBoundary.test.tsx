@@ -9,7 +9,10 @@ function ReportingChild() {
   const reportError = useErrorBoundaryReporter();
 
   return (
-    <button type="button" onClick={() => reportError(new Error('Child crashed'))}>
+    <button
+      type="button"
+      onClick={() => reportError(new Error('Child crashed'))}
+    >
       Break child
     </button>
   );
@@ -18,7 +21,9 @@ function ReportingChild() {
 describe('ErrorBoundary', () => {
   it('catches and handles reported JavaScript errors in child components', async () => {
     const user = userEvent.setup();
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     render(
       <ErrorBoundary>
@@ -48,10 +53,14 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    await user.click(screen.getByRole('button', { name: /simulate app error/i }));
+    await user.click(
+      screen.getByRole('button', { name: /simulate app error/i })
+    );
 
     expect(screen.getByText('Application error')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /simulate app error/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /simulate app error/i })
+    ).not.toBeInTheDocument();
   });
 
   it('displays children while no error has occurred', () => {

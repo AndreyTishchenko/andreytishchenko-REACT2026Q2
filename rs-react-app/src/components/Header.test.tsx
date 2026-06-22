@@ -1,17 +1,18 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { THEME_STORAGE_KEY } from '../constants/storage';
 import { ThemeProvider } from '../context/ThemeProvider';
 import { Header } from './Header';
 
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+}));
+
 const renderHeader = () =>
   render(
     <ThemeProvider>
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
+      <Header />
     </ThemeProvider>
   );
 
@@ -21,7 +22,9 @@ describe('Header', () => {
 
     renderHeader();
 
-    const themeSwitch = screen.getByRole('switch', { name: /use light theme/i });
+    const themeSwitch = screen.getByRole('switch', {
+      name: /use light theme/i,
+    });
 
     expect(themeSwitch).not.toBeChecked();
     expect(document.documentElement.dataset.theme).toBe('dark');
@@ -38,7 +41,9 @@ describe('Header', () => {
 
     renderHeader();
 
-    expect(screen.getByRole('switch', { name: /use light theme/i })).toBeChecked();
+    expect(
+      screen.getByRole('switch', { name: /use light theme/i })
+    ).toBeChecked();
     expect(document.documentElement.dataset.theme).toBe('light');
   });
 });

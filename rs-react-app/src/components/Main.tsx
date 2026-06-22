@@ -1,5 +1,7 @@
+'use client';
+
 import { useCallback, useEffect } from 'react';
-import { Outlet, useSearchParams } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   getPotterApiErrorMessage,
   invalidateCharactersCache,
@@ -20,8 +22,9 @@ import { Pagination } from './Pagination';
 import { Results } from './Results';
 import { Search } from './Search';
 import { SelectedItemsFlyout } from './SelectedItemsFlyout';
+import { CharacterDetails } from '../pages/CharacterDetails';
 
-const getUrlPage = (searchParams: URLSearchParams): number => {
+const getUrlPage = (searchParams: Pick<URLSearchParams, 'get'>): number => {
   const parsedPage = Number(searchParams.get('page'));
   return Number.isInteger(parsedPage) && parsedPage >= FIRST_PAGE
     ? parsedPage
@@ -30,28 +33,27 @@ const getUrlPage = (searchParams: URLSearchParams): number => {
 
 export function Main() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const {
     isSearchReady,
     searchTerm,
     selectedCharacters,
     selectedCharacterIds,
   } = useAppSelector((state) => state.characters);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const currentPage = getUrlPage(searchParams);
   const selectedCharacterId = searchParams.get('details') ?? undefined;
-  const {
-    data,
-    error,
-    isFetching,
-    isLoading,
-    isSuccess,
-  } = useFetchCharactersQuery(
-    { page: currentPage, searchTerm },
-    { skip: !isSearchReady }
-  );
+  const { data, error, isFetching, isLoading, isSuccess } =
+    useFetchCharactersQuery(
+      { page: currentPage, searchTerm },
+      { skip: !isSearchReady }
+    );
   const isQueryLoading = isLoading || isFetching;
   const errorMessage = error
-    ? getPotterApiErrorMessage(error, 'The request failed for an unknown reason.')
+    ? getPotterApiErrorMessage(
+        error,
+        'The request failed for an unknown reason.'
+      )
     : '';
   const characters = data?.characters ?? [];
   const hasNextPage = data?.hasNextPage ?? false;
@@ -64,9 +66,9 @@ export function Main() {
     if (searchParams.get('page') !== String(currentPage)) {
       const nextParams = new URLSearchParams(searchParams);
       nextParams.set('page', String(currentPage));
-      setSearchParams(nextParams, { replace: true });
+      router.replace(`/?${nextParams.toString()}`);
     }
-  }, [currentPage, searchParams, setSearchParams]);
+  }, [currentPage, router, searchParams]);
 
   const handleSearch = useCallback(
     (nextSearchTerm: string): void => {
@@ -74,9 +76,9 @@ export function Main() {
       const nextParams = new URLSearchParams(searchParams);
       nextParams.set('page', String(FIRST_PAGE));
       nextParams.delete('details');
-      setSearchParams(nextParams);
+      router.push(`/?${nextParams.toString()}`);
     },
-    [dispatch, searchParams, setSearchParams]
+    [dispatch, router, searchParams]
   );
 
   const handlePageChange = useCallback(
@@ -84,9 +86,9 @@ export function Main() {
       const nextParams = new URLSearchParams(searchParams);
       nextParams.set('page', String(nextPage));
       nextParams.delete('details');
-      setSearchParams(nextParams);
+      router.push(`/?${nextParams.toString()}`);
     },
-    [searchParams, setSearchParams]
+    [router, searchParams]
   );
 
   const handleSelectCharacter = useCallback(
@@ -94,9 +96,9 @@ export function Main() {
       const nextParams = new URLSearchParams(searchParams);
       nextParams.set('page', String(currentPage));
       nextParams.set('details', characterId);
-      setSearchParams(nextParams);
+      router.push(`/?${nextParams.toString()}`);
     },
-    [currentPage, searchParams, setSearchParams]
+    [currentPage, router, searchParams]
   );
 
   const handleToggleSelection = useCallback(
@@ -123,7 +125,11 @@ export function Main() {
         isLoading={isQueryLoading}
         onSearch={handleSearch}
       />
-      <div className={selectedCharacterId ? 'content-layout has-details' : 'content-layout'}>
+      <div
+        className={
+          selectedCharacterId ? 'content-layout has-details' : 'content-layout'
+        }
+      >
         <div className="master-column">
           <Results
             characters={characters}
@@ -144,7 +150,7 @@ export function Main() {
             />
           ) : null}
         </div>
-        <Outlet key={selectedCharacterId ?? 'empty-details'} />
+        <CharacterDetails key={selectedCharacterId ?? 'empty-details'} />
       </div>
       <SelectedItemsFlyout
         selectedCharacters={selectedCharacters}

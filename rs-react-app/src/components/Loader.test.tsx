@@ -7,7 +7,9 @@ describe('Loader', () => {
   it('renders loading indicator', () => {
     render(<Loader />);
 
-    expect(screen.getByRole('status')).toHaveTextContent(/loading magical records/i);
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /loading magical records/i
+    );
   });
 
   it('uses polite live-region semantics for screen readers', () => {

@@ -1,3 +1,5 @@
+'use client';
+
 import {
   useCallback,
   useEffect,
@@ -12,6 +14,10 @@ const isThemeMode = (value: string | null): value is ThemeMode =>
   value === 'dark' || value === 'light';
 
 const readStoredTheme = (): ThemeMode => {
+  if (typeof window === 'undefined') {
+    return 'dark';
+  }
+
   const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
   return isThemeMode(storedTheme) ? storedTheme : 'dark';
 };
@@ -40,5 +46,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     [theme, toggleTheme]
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 }

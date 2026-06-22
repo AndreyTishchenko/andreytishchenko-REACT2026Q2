@@ -108,7 +108,9 @@ describe('potterApi', () => {
     const store = createAppStore();
 
     const request = store
-      .dispatch(potterApi.endpoints.fetchCharacters.initiate({ searchTerm: '' }))
+      .dispatch(
+        potterApi.endpoints.fetchCharacters.initiate({ searchTerm: '' })
+      )
       .unwrap();
     await vi.advanceTimersByTimeAsync(250);
     await request;
@@ -118,7 +120,9 @@ describe('potterApi', () => {
   });
 
   it('reuses cached query results for identical character search arguments', async () => {
-    fetchMock.mockImplementation(() => Promise.resolve(jsonResponse(potterResponse)));
+    fetchMock.mockImplementation(() =>
+      Promise.resolve(jsonResponse(potterResponse))
+    );
     const store = createAppStore();
     const queryArgs = { page: 1, searchTerm: 'Luna' };
 
@@ -198,7 +202,8 @@ describe('potterApi', () => {
       )
       .unwrap();
     const assertion = expect(request).rejects.toMatchObject({
-      error: 'PotterDB returned data in an unexpected format. Tragic, but readable.',
+      error:
+        'PotterDB returned data in an unexpected format. Tragic, but readable.',
     });
     await vi.advanceTimersByTimeAsync(250);
     await assertion;
@@ -264,7 +269,9 @@ describe('potterApi', () => {
     const result = await request;
     const url = getRequestUrl(fetchMock.mock.calls[0][0]);
 
-    expect(url.href).toBe('https://api.potterdb.com/v1/characters/luna-lovegood');
+    expect(url.href).toBe(
+      'https://api.potterdb.com/v1/characters/luna-lovegood'
+    );
     expect(result).toMatchObject({
       id: 'luna-lovegood',
       name: 'Luna Lovegood',
@@ -326,11 +333,12 @@ describe('potterApi', () => {
     expect(getPotterApiErrorMessage('bad', 'Fallback')).toBe('Fallback');
   });
 
-  it('configures cache TTL from the Vite environment', async () => {
-    vi.stubEnv('VITE_RTK_QUERY_CACHE_TTL_SECONDS', '17');
+  it('configures cache TTL from the Next public environment', async () => {
+    vi.stubEnv('NEXT_PUBLIC_RTK_QUERY_CACHE_TTL_SECONDS', '17');
     vi.resetModules();
 
-    const { potterApiCacheTtlSeconds: configuredTtl } = await import('./potterApi');
+    const { potterApiCacheTtlSeconds: configuredTtl } =
+      await import('./potterApi');
 
     expect(configuredTtl).toBe(17);
   });

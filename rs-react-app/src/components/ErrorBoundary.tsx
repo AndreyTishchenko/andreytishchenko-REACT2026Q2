@@ -17,7 +17,10 @@ const getRejectionError = (reason: unknown): Error => {
   return new Error(String(reason));
 };
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   readonly state: ErrorBoundaryState = {
     hasError: false,
   };
@@ -28,16 +31,26 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidMount(): void {
     window.addEventListener('error', this.handleError);
-    window.addEventListener('unhandledrejection', this.handleUnhandledRejection);
+    window.addEventListener(
+      'unhandledrejection',
+      this.handleUnhandledRejection
+    );
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error('Application error boundary caught an error:', error, errorInfo);
+    console.error(
+      'Application error boundary caught an error:',
+      error,
+      errorInfo
+    );
   }
 
   componentWillUnmount(): void {
     window.removeEventListener('error', this.handleError);
-    window.removeEventListener('unhandledrejection', this.handleUnhandledRejection);
+    window.removeEventListener(
+      'unhandledrejection',
+      this.handleUnhandledRejection
+    );
   }
 
   private readonly reportError = (error: Error): void => {
@@ -65,8 +78,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <p className="section-label">Application error</p>
             <h1>Something broke inside the enchanted machinery.</h1>
             <p>
-              A fallback UI is now protecting the page from turning into a blank white
-              void, the web platform&apos;s favorite jump scare.
+              A fallback UI is now protecting the page from turning into a blank
+              white void, the web platform&apos;s favorite jump scare.
             </p>
           </section>
         </main>

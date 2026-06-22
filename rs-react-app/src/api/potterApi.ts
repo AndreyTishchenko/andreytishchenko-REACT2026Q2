@@ -21,7 +21,7 @@ interface FetchCharactersArgs {
 }
 
 const getCacheTtlSeconds = (): number => {
-  const parsedTtl = Number(import.meta.env.VITE_RTK_QUERY_CACHE_TTL_SECONDS);
+  const parsedTtl = Number(process.env.NEXT_PUBLIC_RTK_QUERY_CACHE_TTL_SECONDS);
 
   return Number.isFinite(parsedTtl) && parsedTtl >= 0
     ? parsedTtl
@@ -57,7 +57,9 @@ const isCharacterAttributes = (
   );
 };
 
-const isCharacterResource = (value: unknown): value is PotterCharacterResource => {
+const isCharacterResource = (
+  value: unknown
+): value is PotterCharacterResource => {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -71,7 +73,9 @@ const isCharacterResource = (value: unknown): value is PotterCharacterResource =
   );
 };
 
-const isCharactersResponse = (value: unknown): value is PotterCharactersResponse => {
+const isCharactersResponse = (
+  value: unknown
+): value is PotterCharactersResponse => {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -80,7 +84,9 @@ const isCharactersResponse = (value: unknown): value is PotterCharactersResponse
   return Array.isArray(record.data) && record.data.every(isCharacterResource);
 };
 
-const isCharacterResponse = (value: unknown): value is PotterCharacterResponse => {
+const isCharacterResponse = (
+  value: unknown
+): value is PotterCharacterResponse => {
   if (typeof value !== 'object' || value === null) {
     return false;
   }
@@ -91,7 +97,7 @@ const isCharacterResponse = (value: unknown): value is PotterCharacterResponse =
 
 const delay = (): Promise<void> =>
   new Promise((resolve) => {
-    window.setTimeout(resolve, ARTIFICIAL_DELAY_MS);
+    globalThis.setTimeout(resolve, ARTIFICIAL_DELAY_MS);
   });
 
 const formatList = (items: readonly string[] | null): string => {
@@ -119,7 +125,9 @@ const buildDescription = (attributes: PotterCharacterAttributes): string => {
     : 'No detailed biography is available in PotterDB for this character.';
 };
 
-const mapCharacter = (character: PotterCharacterResource): CharacterCardModel => ({
+const mapCharacter = (
+  character: PotterCharacterResource
+): CharacterCardModel => ({
   id: character.id,
   name: character.attributes.name ?? 'Unknown character',
   description: buildDescription(character.attributes),
@@ -142,7 +150,9 @@ const mapCharacterDetails = (
   };
 };
 
-const getErrorStatus = (error: { readonly status?: unknown }): string | number => {
+const getErrorStatus = (error: {
+  readonly status?: unknown;
+}): string | number => {
   const record = error as Record<string, unknown>;
 
   if (typeof record.originalStatus === 'number') {
@@ -199,7 +209,12 @@ export const potterApi = createApi({
   keepUnusedDataFor: potterApiCacheTtlSeconds,
   endpoints: (builder) => ({
     fetchCharacters: builder.query<CharacterSearchResult, FetchCharactersArgs>({
-      async queryFn({ page = FIRST_PAGE, searchTerm }, _api, _extraOptions, fetchWithBQ) {
+      async queryFn(
+        { page = FIRST_PAGE, searchTerm },
+        _api,
+        _extraOptions,
+        fetchWithBQ
+      ) {
         await delay();
 
         const params: Record<string, string> = {
@@ -269,7 +284,8 @@ export const potterApi = createApi({
           return {
             error: {
               status: 'CUSTOM_ERROR',
-              error: 'PotterDB returned character details in an unexpected format.',
+              error:
+                'PotterDB returned character details in an unexpected format.',
             },
           };
         }
@@ -283,8 +299,11 @@ export const potterApi = createApi({
   }),
 });
 
-export const { useFetchCharacterDetailsQuery, useFetchCharactersQuery } = potterApi;
+export const { useFetchCharacterDetailsQuery, useFetchCharactersQuery } =
+  potterApi;
 export const invalidateCharactersCache = () =>
   potterApi.util.invalidateTags([{ type: 'Characters', id: 'LIST' }]);
 export const invalidateCharacterDetailsCache = (characterId: string) =>
-  potterApi.util.invalidateTags([{ type: 'CharacterDetails', id: characterId }]);
+  potterApi.util.invalidateTags([
+    { type: 'CharacterDetails', id: characterId },
+  ]);

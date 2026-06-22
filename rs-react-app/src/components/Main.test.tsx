@@ -1,17 +1,40 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { SEARCH_STORAGE_KEY } from '../constants/storage';
 import { ThemeProvider } from '../context/ThemeProvider';
-import { CharacterDetails } from '../pages/CharacterDetails';
 import { createAppStore } from '../store/store';
 import { characters } from '../test/testData';
-import type { PotterCharacterResponse, PotterCharactersResponse } from '../types/potter';
+import type {
+  PotterCharacterResponse,
+  PotterCharactersResponse,
+} from '../types/potter';
 import { Main } from './Main';
 
 const fetchMock = vi.fn();
+const navigationMock = vi.hoisted(() => {
+  const mock = {
+    currentSearchParams: new URLSearchParams(),
+    rerenderApp: undefined as (() => void) | undefined,
+    navigateTo(href: string): void {
+      const url = new URL(href, 'http://localhost');
+      mock.currentSearchParams = url.searchParams;
+      mock.rerenderApp?.();
+    },
+  };
+
+  return mock;
+});
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+  useRouter: () => ({
+    push: navigationMock.navigateTo,
+    replace: navigationMock.navigateTo,
+  }),
+  useSearchParams: () => navigationMock.currentSearchParams,
+}));
 
 const apiResponse: PotterCharactersResponse = {
   data: [
@@ -93,7 +116,9 @@ const jsonResponse = (body: unknown, status = 200): Response =>
 const textResponse = (body: string, status: number): Response =>
   new Response(body, { status });
 
-const mockApiSuccess = (response: PotterCharactersResponse = apiResponse): void => {
+const mockApiSuccess = (
+  response: PotterCharactersResponse = apiResponse
+): void => {
   fetchMock.mockImplementation((request) => {
     const url = getRequestUrl(request);
 
@@ -107,19 +132,23 @@ const mockApiSuccess = (response: PotterCharactersResponse = apiResponse): void 
 
 const renderMain = (initialEntry = '/') => {
   const store = createAppStore();
+  navigationMock.navigateTo(initialEntry);
   const view = render(
     <Provider store={store}>
       <ThemeProvider>
-        <MemoryRouter initialEntries={[initialEntry]}>
-          <Routes>
-            <Route path="/" element={<Main />}>
-              <Route index element={<CharacterDetails />} />
-            </Route>
-          </Routes>
-        </MemoryRouter>
+        <Main />
       </ThemeProvider>
     </Provider>
   );
+  navigationMock.rerenderApp = () => {
+    view.rerender(
+      <Provider store={store}>
+        <ThemeProvider>
+          <Main />
+        </ThemeProvider>
+      </Provider>
+    );
+  };
 
   return { store, ...view };
 };
@@ -129,6 +158,8 @@ describe('Main', () => {
     fetchMock.mockReset();
     mockApiSuccess();
     globalThis.fetch = fetchMock as typeof fetch;
+    navigationMock.rerenderApp = undefined;
+    navigationMock.currentSearchParams = new URLSearchParams();
   });
 
   it('makes initial API call on component mount', async () => {
@@ -198,10 +229,16 @@ describe('Main', () => {
 
     await screen.findByText('Harry Potter');
 
-    await user.click(screen.getByRole('checkbox', { name: /select harry potter/i }));
+    await user.click(
+      screen.getByRole('checkbox', { name: /select harry potter/i })
+    );
 
-    expect(store.getState().characters.selectedCharacterIds).toEqual(['harry-potter']);
-    expect(screen.getByRole('checkbox', { name: /select harry potter/i })).toBeChecked();
+    expect(store.getState().characters.selectedCharacterIds).toEqual([
+      'harry-potter',
+    ]);
+    expect(
+      screen.getByRole('checkbox', { name: /select harry potter/i })
+    ).toBeChecked();
 
     await user.click(screen.getByRole('button', { name: /next/i }));
 
@@ -209,8 +246,12 @@ describe('Main', () => {
       expect(getLastRequestUrl().searchParams.get('page[number]')).toBe('2');
     });
     await screen.findByText('Harry Potter');
-    expect(screen.getByRole('checkbox', { name: /select harry potter/i })).toBeChecked();
-    expect(store.getState().characters.selectedCharacterIds).toEqual(['harry-potter']);
+    expect(
+      screen.getByRole('checkbox', { name: /select harry potter/i })
+    ).toBeChecked();
+    expect(store.getState().characters.selectedCharacterIds).toEqual([
+      'harry-potter',
+    ]);
   });
 
   it('reuses cached page data when returning to a previously fetched page', async () => {
@@ -274,7 +315,9 @@ describe('Main', () => {
     renderMain();
 
     await screen.findByText('Harry Potter');
-    await user.click(screen.getAllByRole('button', { name: /view details/i })[0]);
+    await user.click(
+      screen.getAllByRole('button', { name: /view details/i })[0]
+    );
 
     expect(await screen.findByRole('status')).toHaveTextContent(
       /loading magical records/i
@@ -298,7 +341,9 @@ describe('Main', () => {
       expect(screen.queryByText('The Boy Who Lived')).not.toBeInTheDocument();
     });
 
-    await user.click(screen.getAllByRole('button', { name: /view details/i })[0]);
+    await user.click(
+      screen.getAllByRole('button', { name: /view details/i })[0]
+    );
 
     expect(await screen.findByText('The Boy Who Lived')).toBeInTheDocument();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -311,7 +356,9 @@ describe('Main', () => {
     renderMain();
 
     await screen.findByText('Harry Potter');
-    await user.click(screen.getAllByRole('button', { name: /view details/i })[0]);
+    await user.click(
+      screen.getAllByRole('button', { name: /view details/i })[0]
+    );
 
     expect(await screen.findByText('The Boy Who Lived')).toBeInTheDocument();
     const requestCountAfterDetailsLoad = fetchMock.mock.calls.length;
@@ -382,7 +429,9 @@ describe('Main', () => {
     renderMain();
 
     await screen.findByText('Harry Potter');
-    await user.click(screen.getAllByRole('button', { name: /view details/i })[0]);
+    await user.click(
+      screen.getAllByRole('button', { name: /view details/i })[0]
+    );
 
     expect(
       await screen.findByText(
@@ -412,7 +461,9 @@ describe('Main', () => {
     const { store } = renderMain();
 
     await screen.findByText('Harry Potter');
-    await user.click(screen.getByRole('checkbox', { name: /select harry potter/i }));
+    await user.click(
+      screen.getByRole('checkbox', { name: /select harry potter/i })
+    );
 
     expect(store.getState().characters.selectedCharacters[0]).toMatchObject(
       characters[0]

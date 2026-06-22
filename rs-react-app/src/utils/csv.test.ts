@@ -21,7 +21,9 @@ describe('csv utilities', () => {
     ]);
 
     expect(csv).toContain('id,name,description,detailsUrl');
-    expect(csv).toContain('quote-test,"Comma, Character","Known as ""quoted"""');
+    expect(csv).toContain(
+      'quote-test,"Comma, Character","Known as ""quoted"""'
+    );
     expect(csv).toContain(buildCharacterDetailsUrl('quote-test'));
   });
 

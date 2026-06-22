@@ -38,7 +38,9 @@ export function Card({
     }
   };
 
-  const handleDetailsButtonClick = (event: MouseEvent<HTMLButtonElement>): void => {
+  const handleDetailsButtonClick = (
+    event: MouseEvent<HTMLButtonElement>
+  ): void => {
     event.stopPropagation();
     handleSelect();
   };
@@ -50,7 +52,10 @@ export function Card({
       onClick={handleSelect}
     >
       {characterId ? (
-        <label className="selection-control" onClick={(event) => event.stopPropagation()}>
+        <label
+          className="selection-control"
+          onClick={(event) => event.stopPropagation()}
+        >
           <input
             type="checkbox"
             checked={isSelected}
@@ -63,7 +68,11 @@ export function Card({
       <h3>{name}</h3>
       <p>{description}</p>
       {characterId ? (
-        <button type="button" className="card-link" onClick={handleDetailsButtonClick}>
+        <button
+          type="button"
+          className="card-link"
+          onClick={handleDetailsButtonClick}
+        >
           View details
         </button>
       ) : null}

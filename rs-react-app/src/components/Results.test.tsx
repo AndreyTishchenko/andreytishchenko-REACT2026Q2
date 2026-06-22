@@ -16,14 +16,23 @@ describe('Results and CardList', () => {
     render(<CardList characters={characters} />);
 
     expect(screen.getByText('Harry Potter')).toBeInTheDocument();
-    expect(screen.getByText('House: Gryffindor · Species: Human')).toBeInTheDocument();
+    expect(
+      screen.getByText('House: Gryffindor · Species: Human')
+    ).toBeInTheDocument();
     expect(screen.getByText('Hermione Granger')).toBeInTheDocument();
   });
 
   it('marks selected items with checked checkboxes', () => {
-    render(<CardList characters={characters} selectedCharacterIds={['harry-potter']} />);
+    render(
+      <CardList
+        characters={characters}
+        selectedCharacterIds={['harry-potter']}
+      />
+    );
 
-    expect(screen.getByRole('checkbox', { name: /select harry potter/i })).toBeChecked();
+    expect(
+      screen.getByRole('checkbox', { name: /select harry potter/i })
+    ).toBeChecked();
     expect(
       screen.getByRole('checkbox', { name: /select hermione granger/i })
     ).not.toBeChecked();
@@ -43,7 +52,9 @@ describe('Results and CardList', () => {
       />
     );
 
-    await user.click(screen.getByRole('checkbox', { name: /select harry potter/i }));
+    await user.click(
+      screen.getByRole('checkbox', { name: /select harry potter/i })
+    );
 
     rerender(
       <CardList
@@ -67,20 +78,30 @@ describe('Results and CardList', () => {
   });
 
   it('handles missing or undefined data gracefully', () => {
-    render(<CardList characters={[undefined, { id: 'partial', name: 'Neville' }]} />);
+    render(
+      <CardList characters={[undefined, { id: 'partial', name: 'Neville' }]} />
+    );
 
-    expect(screen.getByRole('heading', { name: 'Unknown character' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Neville' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Unknown character' })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Neville' })
+    ).toBeInTheDocument();
   });
 
   it('shows loading state while fetching data', () => {
     render(<Results characters={[]} errorMessage="" isLoading />);
 
-    expect(screen.getByRole('status')).toHaveTextContent(/loading magical records/i);
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /loading magical records/i
+    );
   });
 
   it('hides loading state when loading is false', () => {
-    render(<Results characters={characters} errorMessage="" isLoading={false} />);
+    render(
+      <Results characters={characters} errorMessage="" isLoading={false} />
+    );
 
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });

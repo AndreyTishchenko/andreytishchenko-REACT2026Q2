@@ -9,7 +9,8 @@ interface SearchProps {
 }
 
 export function Search({ initialValue, isLoading, onSearch }: SearchProps) {
-  const [storedSearchTerm, writeSearchTerm] = useLocalStorage(SEARCH_STORAGE_KEY);
+  const [storedSearchTerm, writeSearchTerm] =
+    useLocalStorage(SEARCH_STORAGE_KEY);
   const [value, setValue] = useState(() => initialValue ?? storedSearchTerm);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {

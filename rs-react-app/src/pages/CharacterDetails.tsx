@@ -1,4 +1,6 @@
-import { useSearchParams } from 'react-router-dom';
+'use client';
+
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   getPotterApiErrorMessage,
   invalidateCharacterDetailsCache,
@@ -10,10 +12,15 @@ import { useAppDispatch } from '../store/hooks';
 
 export function CharacterDetails() {
   const dispatch = useAppDispatch();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const characterId = searchParams.get('details') ?? '';
-  const { data: details, error, isFetching, isLoading } =
-    useFetchCharacterDetailsQuery(characterId, { skip: !characterId });
+  const {
+    data: details,
+    error,
+    isFetching,
+    isLoading,
+  } = useFetchCharacterDetailsQuery(characterId, { skip: !characterId });
   const isQueryLoading = isLoading || isFetching;
   const errorMessage = error
     ? getPotterApiErrorMessage(error, 'The character details failed to load.')
@@ -26,7 +33,7 @@ export function CharacterDetails() {
   const handleClose = (): void => {
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete('details');
-    setSearchParams(nextParams);
+    router.push(`/?${nextParams.toString()}`);
   };
 
   const handleRefreshDetails = (): void => {

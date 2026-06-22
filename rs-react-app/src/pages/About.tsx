@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 export function About() {
   return (
@@ -20,7 +20,7 @@ export function About() {
             RS School React course
           </a>
         </p>
-        <Link className="text-link" to="/?page=1">
+        <Link className="text-link" href="/?page=1">
           Back to search
         </Link>
       </section>

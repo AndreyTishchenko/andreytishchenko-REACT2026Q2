@@ -15,14 +15,18 @@ describe('Card', () => {
       />
     );
 
-    expect(screen.getByRole('heading', { name: 'Minerva McGonagall' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Minerva McGonagall' })
+    ).toBeInTheDocument();
     expect(screen.getByText('House: Gryffindor')).toBeInTheDocument();
   });
 
   it('handles missing props gracefully', () => {
     render(<Card />);
 
-    expect(screen.getByRole('heading', { name: 'Unknown character' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Unknown character' })
+    ).toBeInTheDocument();
     expect(
       screen.getByText('No detailed biography is available for this character.')
     ).toBeInTheDocument();
@@ -31,7 +35,9 @@ describe('Card', () => {
   it('handles missing fields gracefully', () => {
     render(<Card character={{ id: 'missing-fields' }} />);
 
-    expect(screen.getByRole('heading', { name: 'Unknown character' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Unknown character' })
+    ).toBeInTheDocument();
   });
 
   it('notifies when a selectable card is opened', async () => {
@@ -84,7 +90,9 @@ describe('Card', () => {
       />
     );
 
-    await user.click(screen.getByRole('checkbox', { name: /select luna lovegood/i }));
+    await user.click(
+      screen.getByRole('checkbox', { name: /select luna lovegood/i })
+    );
 
     expect(onToggleSelection).toHaveBeenCalledWith({
       id: 'luna',
