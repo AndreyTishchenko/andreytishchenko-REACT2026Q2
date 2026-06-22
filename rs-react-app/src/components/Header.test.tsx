@@ -7,6 +7,39 @@ import { Header } from './Header';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock('next-intl', () => ({
+  useLocale: () => 'en',
+  useTranslations: () => (key: string) =>
+    ({
+      about: 'About',
+      copy: 'Search the magical record shelves without having to ask a portrait for directions.',
+      dark: 'Dark',
+      eyebrow: 'PotterDB Archives',
+      language: 'Language',
+      light: 'Light',
+      search: 'Search',
+      themeLabel: 'Use light theme',
+      title: 'Wizarding Character Search',
+    })[key] ?? key,
+}));
+
+vi.mock('../i18n/navigation', () => ({
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string | { pathname: string };
+  }) => (
+    <a href={typeof href === 'string' ? href : href.pathname} {...props}>
+      {children}
+    </a>
+  ),
+  usePathname: () => '/',
 }));
 
 const renderHeader = () =>

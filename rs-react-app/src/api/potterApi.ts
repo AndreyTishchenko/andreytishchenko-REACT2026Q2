@@ -20,6 +20,18 @@ interface FetchCharactersArgs {
   readonly searchTerm: string;
 }
 
+interface PotterApiSuccess<TData> {
+  readonly data: TData;
+  readonly errorMessage?: undefined;
+}
+
+interface PotterApiFailure {
+  readonly data?: undefined;
+  readonly errorMessage: string;
+}
+
+type PotterApiResult<TData> = PotterApiSuccess<TData> | PotterApiFailure;
+
 const getCacheTtlSeconds = (): number => {
   const parsedTtl = Number(process.env.NEXT_PUBLIC_RTK_QUERY_CACHE_TTL_SECONDS);
 
@@ -150,6 +162,23 @@ const mapCharacterDetails = (
   };
 };
 
+const buildCharactersUrl = ({
+  page = FIRST_PAGE,
+  searchTerm,
+}: FetchCharactersArgs): URL => {
+  const url = new URL(`${API_BASE_URL}/characters`);
+
+  url.searchParams.set('page[number]', String(page));
+  url.searchParams.set('page[size]', String(PAGE_SIZE));
+  url.searchParams.set('sort', 'name');
+
+  if (searchTerm.length > 0) {
+    url.searchParams.set('filter[name_cont]', searchTerm);
+  }
+
+  return url;
+};
+
 const getErrorStatus = (error: {
   readonly status?: unknown;
 }): string | number => {
@@ -200,6 +229,61 @@ export const getPotterApiErrorMessage = (
   }
 
   return fallbackMessage;
+};
+
+export const fetchCharactersFromPotter = async (
+  args: FetchCharactersArgs
+): Promise<PotterApiResult<CharacterSearchResult>> => {
+  const response = await fetch(buildCharactersUrl(args), {
+    next: { revalidate: potterApiCacheTtlSeconds },
+  });
+
+  if (!response.ok) {
+    return {
+      errorMessage: `The Ministry archives refused the request (${response.status}). Please try again later.`,
+    };
+  }
+
+  const body: unknown = await response.json();
+
+  if (!isCharactersResponse(body)) {
+    return {
+      errorMessage:
+        'PotterDB returned data in an unexpected format. Tragic, but readable.',
+    };
+  }
+
+  return {
+    data: {
+      characters: body.data.map(mapCharacter),
+      hasNextPage: Boolean(body.links?.next),
+    },
+  };
+};
+
+export const fetchCharacterDetailsFromPotter = async (
+  characterId: string
+): Promise<PotterApiResult<CharacterDetailsModel>> => {
+  const response = await fetch(`${API_BASE_URL}/characters/${characterId}`, {
+    next: { revalidate: potterApiCacheTtlSeconds },
+  });
+
+  if (!response.ok) {
+    return {
+      errorMessage: `The Ministry archives could not find that character (${response.status}).`,
+    };
+  }
+
+  const body: unknown = await response.json();
+
+  if (!isCharacterResponse(body)) {
+    return {
+      errorMessage:
+        'PotterDB returned character details in an unexpected format.',
+    };
+  }
+
+  return { data: mapCharacterDetails(body.data) };
 };
 
 export const potterApi = createApi({

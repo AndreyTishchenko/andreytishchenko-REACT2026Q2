@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   getPotterApiErrorMessage,
@@ -40,7 +40,11 @@ export function Main() {
     selectedCharacters,
     selectedCharacterIds,
   } = useAppSelector((state) => state.characters);
-  const searchParams = useSearchParams();
+  const rawSearchParams = useSearchParams();
+  const searchParams = useMemo(
+    () => rawSearchParams ?? new URLSearchParams(),
+    [rawSearchParams]
+  );
   const currentPage = getUrlPage(searchParams);
   const selectedCharacterId = searchParams.get('details') ?? undefined;
   const { data, error, isFetching, isLoading, isSuccess } =

@@ -152,6 +152,27 @@ input:disabled {
   accent-color: var(--color-accent);
 }
 
+.language-switcher {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.language-switcher a {
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent-strong) 24%, transparent);
+  border-radius: 999px;
+  color: var(--color-accent-strong);
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.language-switcher a.active {
+  background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+
 .app-header h1,
 .panel h1,
 .panel h2,
@@ -348,13 +369,15 @@ input:disabled {
 
 .card-link,
 .close-button,
-.pagination button {
+.pagination button,
+.pagination a {
   border: 1px solid
     color-mix(in srgb, var(--color-accent-strong) 28%, transparent);
   border-radius: 12px;
   background: color-mix(in srgb, var(--color-accent-strong) 8%, transparent);
   color: var(--color-accent-strong);
   font-weight: 800;
+  text-decoration: none;
 }
 
 .card-link {
@@ -413,9 +436,11 @@ input:disabled {
   margin-top: 20px;
 }
 
-.pagination button {
+.pagination button,
+.pagination a {
   min-width: 96px;
   padding: 10px 14px;
+  text-align: center;
 }
 
 .pagination span {

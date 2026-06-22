@@ -13,7 +13,7 @@ import { useAppDispatch } from '../store/hooks';
 export function CharacterDetails() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams() ?? new URLSearchParams();
   const characterId = searchParams.get('details') ?? '';
   const {
     data: details,
@@ -98,3 +98,5 @@ export function CharacterDetails() {
     </aside>
   );
 }
+
+export default CharacterDetails;

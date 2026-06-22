@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '../i18n/navigation';
 
 export function NotFound() {
   return (
@@ -14,3 +14,5 @@ export function NotFound() {
     </main>
   );
 }
+
+export default NotFound;

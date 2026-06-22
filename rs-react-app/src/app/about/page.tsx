@@ -1,5 +1,6 @@
-import { About } from '../../pages/About';
+import { redirect } from '../../i18n/navigation';
+import { routing } from '../../i18n/routing';
 
 export default function AboutPage() {
-  return <About />;
+  redirect({ href: '/about', locale: routing.defaultLocale });
 }

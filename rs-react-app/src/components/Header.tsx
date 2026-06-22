@@ -1,10 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useTheme } from '../context/useTheme';
+import { Link, usePathname } from '../i18n/navigation';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 export function Header() {
+  const t = useTranslations('Header');
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const isLightTheme = theme === 'light';
@@ -17,33 +19,31 @@ export function Header() {
             className={pathname === '/' ? 'active' : undefined}
             href="/?page=1"
           >
-            Search
+            {t('search')}
           </Link>
           <Link
             className={pathname === '/about' ? 'active' : undefined}
             href="/about"
           >
-            About
+            {t('about')}
           </Link>
         </nav>
         <label className="theme-switch">
-          <span>Dark</span>
+          <span>{t('dark')}</span>
           <input
             type="checkbox"
             role="switch"
             checked={isLightTheme}
             onChange={toggleTheme}
-            aria-label="Use light theme"
+            aria-label={t('themeLabel')}
           />
-          <span>Light</span>
+          <span>{t('light')}</span>
         </label>
+        <LanguageSwitcher label={t('language')} />
       </div>
-      <p className="eyebrow">PotterDB Archives</p>
-      <h1>Wizarding Character Search</h1>
-      <p className="header-copy">
-        Search the magical record shelves without having to ask a portrait for
-        directions.
-      </p>
+      <p className="eyebrow">{t('eyebrow')}</p>
+      <h1>{t('title')}</h1>
+      <p className="header-copy">{t('copy')}</p>
     </header>
   );
 }

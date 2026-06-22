@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '../i18n/navigation';
 
 export function About() {
   return (
@@ -27,3 +27,5 @@ export function About() {
     </main>
   );
 }
+
+export default About;

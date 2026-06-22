@@ -35,7 +35,15 @@ describe('csv utilities', () => {
     const revokeObjectUrl = vi.fn();
     let downloadedFileName = '';
     let blob: Blob | undefined;
+    const fetchMock = vi.fn(() =>
+      Promise.resolve(
+        new Response('id,name,description,detailsUrl', {
+          headers: { 'Content-Type': 'text/csv;charset=utf-8' },
+        })
+      )
+    );
 
+    globalThis.fetch = fetchMock as typeof fetch;
     Object.defineProperty(URL, 'createObjectURL', {
       configurable: true,
       value: (nextBlob: Blob) => {
@@ -53,8 +61,13 @@ describe('csv utilities', () => {
       downloadedFileName = this.download;
     });
 
-    downloadSelectedCharactersCsv(characters);
+    await downloadSelectedCharactersCsv(characters);
 
+    expect(fetchMock).toHaveBeenCalledWith('/api/selected-characters-csv', {
+      body: JSON.stringify(characters),
+      headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+    });
     expect(createObjectUrl).toHaveBeenCalledOnce();
     expect(revokeObjectUrl).toHaveBeenCalledWith('blob:selection-csv');
     expect(downloadedFileName).toBe('2_items.csv');

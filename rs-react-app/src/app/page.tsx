@@ -1,10 +1,6 @@
-import { Suspense } from 'react';
-import { Main } from '../components/Main';
+import { redirect } from '../i18n/navigation';
+import { routing } from '../i18n/routing';
 
 export default function Home() {
-  return (
-    <Suspense fallback={null}>
-      <Main />
-    </Suspense>
-  );
+  redirect({ href: '/?page=1', locale: routing.defaultLocale });
 }
