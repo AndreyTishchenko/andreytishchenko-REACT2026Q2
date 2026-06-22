@@ -1,0 +1,73 @@
+{
+  "Header": {
+    "search": "Search",
+    "about": "About",
+    "dark": "Dark",
+    "light": "Light",
+    "themeLabel": "Use light theme",
+    "language": "Language",
+    "eyebrow": "PotterDB Archives",
+    "title": "Wizarding Character Search",
+    "copy": "Search the magical record shelves without having to ask a portrait for directions."
+  },
+  "Search": {
+    "label": "Character name",
+    "section": "Top controls",
+    "title": "Search the archives",
+    "placeholder": "Try Hermione, Weasley, Dumbledore...",
+    "submit": "Search"
+  },
+  "Results": {
+    "section": "Results",
+    "title": "Archive entries",
+    "refresh": "Refresh results",
+    "empty": "No characters found. The Room of Requirement apparently required fewer results.",
+    "select": "Select",
+    "selectCharacter": "Select {name}",
+    "viewDetails": "View details",
+    "pagination": "Results pagination",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page}"
+  },
+  "Details": {
+    "section": "Character details",
+    "loading": "Loading entry",
+    "refresh": "Refresh details",
+    "close": "Close",
+    "empty": "Select a character to inspect the archive entry.",
+    "house": "House",
+    "species": "Species",
+    "gender": "Gender",
+    "born": "Born",
+    "died": "Died",
+    "jobs": "Jobs",
+    "aliases": "Aliases"
+  },
+  "Flyout": {
+    "label": "Selected items actions",
+    "selected": "{count} selected",
+    "unselectAll": "Unselect all",
+    "download": "Download"
+  },
+  "About": {
+    "section": "About",
+    "title": "Wizarding Character Search",
+    "copy": "Created by Andrey Tishchenko as part of the RS School React course. The app searches PotterDB character records and demonstrates hooks, routing, pagination, and server-rendered App Router workflows.",
+    "course": "RS School React course",
+    "back": "Back to search"
+  },
+  "NotFound": {
+    "section": "404",
+    "title": "Page not found",
+    "copy": "That route is not in the archive.",
+    "back": "Back to search"
+  },
+  "Loader": {
+    "message": "Loading magical records..."
+  },
+  "Errors": {
+    "listFallback": "The request failed for an unknown reason.",
+    "detailsFallback": "The character details failed to load."
+  }
+}
